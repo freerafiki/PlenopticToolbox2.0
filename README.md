@@ -1,11 +1,6 @@
-Title:	A New MultiMarkdown Document  
-Author: Fletcher T. Penney	
-		John Doe  
-Date:	July 25, 2005 
-
-Title: PlenopticToolbox2.0
-Author: Luca Palmieri
-Address: lpa@informatik.uni-kiel.de
+Title: PlenopticToolbox2.0  
+Author: Luca Palmieri  
+Address: lpa@informatik.uni-kiel.de  
 Date:	December 2017
 
 # PlenopticToolbox2.0
