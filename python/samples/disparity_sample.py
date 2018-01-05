@@ -35,7 +35,7 @@ class EvalParameters(object):
         self.struct_var = 0.01
         self.coarse_penalty1 = 0.01
         self.coarse_penalty2 = 0.03
-        self.technique = 'censusv2'
+        self.technique = 'sad'
         self.lut_trade_off = 1
 
 
@@ -57,12 +57,15 @@ if __name__ == "__main__":
         raise OSError('Path {0} does not exist'.format(args.output_path))
                           
     params = EvalParameters()
-    params.filename = args.input_filename
+    params.filename = args.input_filename[0]
     params.coarse = args.coarse
     params.technique = args.technique
     params.method = 'real_lut'
+    params.min_disp = args.min_disp
+    params.max_disp = args.max_disp
+    params.num_disp = args.num_disp
 
-    I, disp, Dwta, Dgt, Dconf, Dcoarse, sgm_err, wta_err, disparities, ncomp, disp_avg, sgm_err_mask, err_img, err_img_thresh, err_mse, new_offset = rtxmain.main(params)
+    I, disp, Dwta, Dgt, Dconf, Dcoarse, sgm_err, wta_err, disparities, ncomp, disp_avg, sgm_err_mask, err_img, err_img_thresh, err_mse, new_offset = rtxmain.estimate_disp(params)
 
     disp_name = "{0}/disp_{1}_{2}_{3}_{4}.png".format(args.output_path, params.method, disparities[0], disparities[-1], params.technique) 
     disp_name_col = "{0}/disp_col_{1}_{2}_{3}_{4}.png".format(args.output_path, params.method, disparities[0], disparities[-1], params.technique) 
