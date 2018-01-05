@@ -3,6 +3,8 @@ Author: Luca Palmieri
 Address: lpa@informatik.uni-kiel.de  
 Date:	December 2017
 
+### The Project is yet in development, the code and images uploaded could be outdated or not working. 
+
 # Plenoptic Toolbox 2.0
 The Plenoptic Toolbox 2.0 aims to help promote research using Focused Plenoptic Cameras (a.k.a. Plenoptic 2.0), 
 providing a dataset of real and synthetic images.
