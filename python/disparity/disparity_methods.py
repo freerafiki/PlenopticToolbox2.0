@@ -17,35 +17,8 @@ import os
 import json
 import pdb
 
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Evaluate synthetic MLA data")
-    parser.add_argument(dest='filename', nargs=1, help="Name of the lens config file")
-
-    parser.add_argument('--max_disp_fac', default=0.5, type=float)
-    parser.add_argument('--min_disp_fac', default=0.02, type=float)
-    parser.add_argument('--max_ring', default=1, type=int)
-    parser.add_argument('--max_cost', default=10.0, type=float)
-    parser.add_argument('--penalty1', default=0.08, type=float, help="Penalty 1 for SGM")
-    parser.add_argument('--penalty2', default=0.15, type=float, help="Penalty 2 for SGM")
-    parser.add_argument('--method', default='plain', choices=['plain', 's1', 's2', 's3'])
-    parser.add_argument('--use_rings', default='0')
-    parser.add_argument('--no-refine', dest='refine', default=True, action='store_false')
-    parser.add_argument('--coc_thresh', default=2.0, type=float)
-    parser.add_argument('--conf_sigma', default=0.2, type=float)
-    parser.add_argument('--coarse', default=False, action='store_true')
-    parser.add_argument('--coarse_weight', default=0.01, type=float)
-    parser.add_argument('--struct_var', default=0.003, type=float)
-    parser.add_argument('--coarse_penalty1', default=0.005, type=float)
-    parser.add_argument('--coarse_penalty2', default=0.01, type=float)
-    parser.add_argument('-technique', default=1, type=int)
-    
-    args = parser.parse_args()
-
-    res = main(args)
-
-
-def estimate_disp(params):
+def estimate_disp(args):
 
     B = np.array([[np.sqrt(3)/2, 0.5], [0, 1]]).T
 
@@ -55,17 +28,16 @@ def estimate_disp(params):
     for i in rings: 
         nb_offsets.extend(rtxhexgrid.HEX_OFFSETS[i])
     
-    #unpack parameters
-    lenses = params['scene']
-    scene_type = params['scene_type']
+    lenses, scene_type = load_scene(args.filename)
 
     diam = lenses[0, 0].diameter
-    max_disp = params['max_disp']
-    min_disp = params['min_disp'] 
+    max_disp = float(args.max_disp) 
+    min_disp = float(args.min_disp) 
+    num_disp = float(args.num_disp)
     
     max_lens_dist = np.linalg.norm(np.dot(B, rtxhexgrid.HEX_OFFSETS[args.max_ring][0]))
     
-    disparities = np.arange(min_disp, max_disp, 16.0 / max_lens_dist)
+    disparities = np.arange(min_disp, max_disp, (max_disp - min_disp) / num_disp) #16.0 / max_lens_dist)
     #disparities = np.arange(min_disp, 0.7 * diam, 4.0 / max_lens_dist)
     print("Disparities: {0}".format(disparities))
     
@@ -210,7 +182,7 @@ def real_lut(lens, lenses, coarse_costs, disparities, max_cost=10.0, nb_args=Non
     tref = rtxhexgrid.hex_focal_type(lens.lcoord)
     
     #read the lut
-    lut_filename = 'lut_table.json'
+    lut_filename = '../disparity/lut_table.json'
     with open(lut_filename, 'r') as f:
         lut_str = json.load(f)
     
