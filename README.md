@@ -11,3 +11,5 @@ It also provide a python library to work with such images (in particular with Ra
 
 The code is completely open source and can be integrated and further developed for research projects.
 
+The Dataset containing the images (for reasons of space cannot be provided here) is available at the following address:
+https://drive.google.com/open?id=17I6nTf4GLYiO9fdWITEy155F-OaonaeQ
