@@ -26,4 +26,11 @@ export PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python
 
 There is another way to set the environmental variable at login, by editing the right configuration file ([here there is a more detailed explanation about which file to edit](https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps#setting-environmental-variables-at-login)
 
+In the file it should be added the line
+```
+export PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python
+```
+
+To prove that the environmental variable is set, a simple test can be done using the command `printenv` from terminal, that will print the content of all environmental variables.
+
 For further information, write to lpa@informatik.uni-kiel.de
