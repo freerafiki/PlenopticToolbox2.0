@@ -10,6 +10,7 @@ import disparity.disparity_calculation as rtxdisp
 import plenopticIO.lens_grid as rtxhexgrid
 import rendering.render as rtxrender
 import plenopticIO.imgIO as rtxIO
+import disparity.sgm as rtxsgm
 import numpy as np
 import argparse
 import math
@@ -35,7 +36,7 @@ def estimate_disp(args):
     min_disp = float(args.min_disp) 
     num_disp = float(args.num_disp)
     
-    max_lens_dist = np.linalg.norm(np.dot(B, rtxhexgrid.HEX_OFFSETS[args.max_ring][0]))
+    #max_lens_dist = np.linalg.norm(np.dot(B, rtxhexgrid.HEX_OFFSETS[args.max_ring][0]))
     
     disparities = np.arange(min_disp, max_disp, (max_disp - min_disp) / num_disp) #16.0 / max_lens_dist)
     #disparities = np.arange(min_disp, 0.7 * diam, 4.0 / max_lens_dist)
@@ -182,7 +183,7 @@ def real_lut(lens, lenses, coarse_costs, disparities, max_cost=10.0, nb_args=Non
     tref = rtxhexgrid.hex_focal_type(lens.lcoord)
     
     #read the lut
-    lut_filename = '../disparity/lut_table.json'
+    lut_filename = 'disparity/lut_table.json'
     with open(lut_filename, 'r') as f:
         lut_str = json.load(f)
     
@@ -300,7 +301,7 @@ def fixed_selection_strategy_1():
     return [offset for offset in nb_offsets]
     
 def fixed_selection_strategy_2():
-    
+    raytrix
     """
 
     """
@@ -489,7 +490,7 @@ def fixed_selection_strategy_9():
 def fixed_selection_strategy_10():
 
     """
-
+raytrix
     """
     
     nb_offsets = dict()
@@ -672,7 +673,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         fine_depths[l] = np.argmin(sgm_cost, axis=2)
         
         # interpolated minima and values
-        fine_depths_interp[l], fine_depths_val[l] = rtxdepth.cost_minima_interp(sgm_cost, disp)
+        fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
 
         if i%1000==0:
             print("max interp: {0}".format(np.amax(fine_depths_interp[l])))
@@ -686,7 +687,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         wta_depths[l] = np.argmin(F, axis=2)
         
         # interpolated minima and values from the unregularized cost volume
-        wta_depths_interp[l], wta_depths_val[l] = rtxdepth.cost_minima_interp(F, disp)
+        wta_depths_interp[l], wta_depths_val[l] = rtxdisp.cost_minima_interp(F, disp)
 
         confidence[l] = np.sum(np.exp(-((sgm_cost - fine_depths_val[l][:, :, None])**2) / conf_sigma), axis=2) - 1
 
@@ -787,3 +788,30 @@ def calc_costs_per_lens(lens, nb_lenses, disparities, max_cost, technique):
     lens_std = np.std(lens.img[lens.mask > 0])
   
     return cost, coarse_costs, coarse_costs_merged, lens_std
+    
+class EvalParameters(object):
+
+    def __init__(self):
+
+        self.max_disp_fac = 0.4 
+        self.min_disp_fac = 0.05 
+        self.max_ring = 7
+        self.max_cost = 10.0
+        self.penalty1 = 0.01 
+        self.penalty2 = 0.03 
+        self.method = 'plain'
+        self.use_rings = '0,1'
+        self.refine = True
+        self.coc_thresh = 1.2#1.5
+        self.conf_sigma = 0.2
+        self.max_conf = 2.0
+        self.filename = None
+        self.coarse = False
+        self.coarse_weight = 0.01
+        self.struct_var = 0.01
+        self.coarse_penalty1 = 0.01
+        self.coarse_penalty2 = 0.03
+        self.technique = 'sad'
+        self.lut_trade_off = 1
+        self.num_disp = 12
+        self.method = 'real_lut'
