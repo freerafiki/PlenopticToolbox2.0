@@ -1,0 +1,60 @@
+<RayCalibData version="1.0">
+  <offset units="pix">
+    <x>17.759811322506</x>
+    <y>14.905208990217</y>
+  </offset>
+  <diameter units="pix">34.864704132080</diameter>
+  <rotation units="rad">0.000000000000</rotation>
+  <lens_border units="pix">1.000000000000</lens_border>
+  <tcp units="virtual_depth">2.180962562561</tcp>
+  <lens_base_x units="lens">
+    <x>1.000000000000</x>
+    <y>0.000000000000</y>
+  </lens_base_x>
+  <lens_base_y units="lens">
+    <x>0.500000000000</x>
+    <y>-0.866025388241</y>
+  </lens_base_y>
+  <sub_grid_base units="lens">
+    <x>3.000000000000</x>
+    <y>-1.732050776482</y>
+  </sub_grid_base>
+  <distortion type="radial">
+    <function>constant</function>
+    <parameter count="0">0</parameter>
+    <offset units="pix">
+      <x>0.000000000000</x>
+      <y>0.000000000000</y>
+    </offset>
+  </distortion>
+  <lens_type id="0">
+    <offset units="lens">
+      <x>0.000000000000</x>
+      <y>0.000000000000</y>
+    </offset>
+    <depth_range units="virtual_depth">
+      <min>1.000000000000</min>
+      <max>3.000000000000</max>
+    </depth_range>
+  </lens_type>
+  <lens_type id="1">
+    <offset units="lens">
+      <x>1.000000000000</x>
+      <y>0.000000000000</y>
+    </offset>
+    <depth_range units="virtual_depth">
+      <min>2.799999952316</min>
+      <max>4.000000000000</max>
+    </depth_range>
+  </lens_type>
+  <lens_type id="2">
+    <offset units="lens">
+      <x>-1.000000000000</x>
+      <y>0.000000000000</y>
+    </offset>
+    <depth_range units="virtual_depth">
+      <min>3.799999952316</min>
+      <max>100.000000000000</max>
+    </depth_range>
+  </lens_type>
+</RayCalibData>
