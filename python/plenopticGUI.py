@@ -10,6 +10,7 @@ import pdb
 import numpy as np
 import plenopticIO.imgIO as plIO
 import disparity.disparity_methods as pldisp
+import os
 
  
 # read the image with PhotoIMage
@@ -77,16 +78,16 @@ class Gui():
         root.folderentry.insert(END, '/data1/palmieri/PlenopticToolbox/TestImages')
         root.folderentry.grid(row = 2,column = 1,sticky = E+ W)
         root.entry = Entry(frame)
-        root.entry.insert(END, '1.png')
+        root.entry.insert(END, 'Cards.png')
         root.entry.grid(row = 3,column = 1,sticky = E+ W)
         root.entry1 = Entry(frame)
-        root.entry1.insert(END, '2.png')
+        root.entry1.insert(END, 'Hawaii.png')
         root.entry1.grid(row = 4,column = 1, sticky = E)
         root.entry2 = Entry(frame)
-        root.entry2.insert(END, '3.png')
+        root.entry2.insert(END, 'Specular.png')
         root.entry2.grid(row = 5,column = 1,sticky = E+ W)
         root.entry3 = Entry(frame)
-        root.entry3.insert(END, '4.png')
+        root.entry3.insert(END, 'Trucks.png')
         root.entry3.grid(row = 6,column = 1, sticky = E)
         ButtonFolder=Button(frame,text="Change Folder", command=change_path).grid(row = 2,column = 2, sticky = "we")
         Button1=Button(frame,text="Load", command=loadimg1).grid(row = 3,column = 2, sticky = "we")
@@ -106,11 +107,12 @@ class Gui():
         disp_store.set("Img2")
                 
         to_whom=Label(frame, text="Input Image?").grid(row=8,column=0, sticky="nw")
-        which_met=Label(frame, text="Output Image?").grid(row=8,column=1, sticky="nw")
+        which_met=Label(frame, text="Save As?").grid(row=8,column=1, sticky="nw")
         self.option=tk.OptionMenu(frame, img_target, "Img1", "Img2", "Img3", "Img4")
         self.option.grid(row=9,column=0,sticky="nwe")
-        self.option2=tk.OptionMenu(frame, disp_store, "Img1", "Img2", "Img3", "Img4")
-        self.option2.grid(row=9,column=1,sticky="nwe")
+        root.option2 = Entry(frame)
+        root.option2.insert(END, 'Disparity.png')
+        root.option2.grid(row=9,column=1,sticky="nwe")
         Button1=Button(frame,text="Estimate", command=estimatedisp).grid(row = 9,column = 2, sticky = "we")
                 
                 
@@ -192,6 +194,8 @@ class Gui():
         return root.pen2Value.get()       #Grid.columnconfigure(self.root,1,weight=1, size=200)
     def get_cover(self):
         return root.coverValue.get()   
+    def get_disp_path(self):
+        return root.option2.get()
             
 def change_path():
 
@@ -208,10 +212,10 @@ def loadimg1():
     image_path = "{0}/{1}".format(Gui.get_path(root), Gui.get_entry1(root))
     print("Loading image {0}".format(image_path))
     #pdb.set_trace()
-    global img_1, img_1_dict
+    global img_1 #, img_1_dict
     #img_1 = plt.imread(image_path)
     img_1 = PhotoImage(file = image_path)
-    img_1_dict = load_real_img(image_path)
+    #img_1_dict = load_real_img(image_path)
     global isThereImg1
     isThereImg1 = True
 
@@ -472,39 +476,40 @@ def fig2data ( fig ):
     return buf
 
 def estimatedisp():
-
+        
     # check img source and target
-    pdb.set_trace()
     img_source = img_target.get()
+    img_store = disp_store.get()
     if img_source == 'Img1':
         if not isThereImg1:
-            #print("Missing the input image! Please load img1")
+            print("Missing the input image! Please load img1")
             #return
-        #else:
+        else:
             # read the parameters
-            pdb.set_trace()
-            min_disp = int(Gui.get_dmin(root))
+            min_disp = float(Gui.get_dmin(root))
             if min_disp < 0 or min_disp > 12:
                 print("Wrong value of Minimum Disparity!")
-                continue
-            max_disp = int(Gui.get_dmax(root))
+            max_disp = float(Gui.get_dmax(root))
             coc = Gui.get_coc(root)
             pen1 = Gui.get_pen1(root)
             pen2 = Gui.get_pen2(root)
             cover = Gui.get_cover(root)
-            
+            image_path_png = "{0}/{1}".format(Gui.get_path(root), Gui.get_entry1(root))
+            basename, suffix = os.path.splitext(image_path_png)
+            image_path_config = basename + ".xml"
             #pack all
-            params = dict()
-            params['scene'] = img_1_dict
-            params['scene_type'] = 'real'
-            params['min_disp'] = min_disp
-            params['max_disp'] = max_disp
-            params['coc'] = coc
-            params['pen1'] = pen1
-            params['pen2'] = pen2
-            params['cover'] = cover
+            params = pldisp.EvalParameters()
+            params.filename = image_path_config
+            params.scene_type = 'real'
+            params.min_disp = float(min_disp)
+            params.max_disp = float(max_disp)
+            params.coc_thresh = float(coc)
+            params.penalty1 = float(pen1)
+            params.penalty2 = float(pen2)
+            params.max_ring = float(cover)
             
-            pldisp.estimate_disp(params)
+            disp_pack = pldisp.estimate_disp(params)
+            pdb.set_trace()
     if img_source == 'Img2' and not isThereImg2:
         print("Missing the input image! Please load img2")
         return
@@ -514,6 +519,11 @@ def estimatedisp():
     if img_source == 'Img4' and not isThereImg4:
         print("Missing the input image! Please load img4")
         return
+    
+    disp_path_to_save = "{0}/{1}".format(Gui.get_path(root), Gui.get_disp_path(root))
+    plt.imsave(disp_path_to_save, disp_pack[1])
+    print("Disparity Calculated and Saved!")
+    #done = refresh_images('nochange')
             
 def option_changed(*args):
 
@@ -528,7 +538,8 @@ def option_changed(*args):
     
 #def loadimage1():        
 def draw_figure(canvas, figure, loc=(0, 0)):
-    """ Draw a matplotlib figure onto a Tk canvas
+    """ 
+    Draw a matplotlib figure onto a Tk canvas
 
     loc: location of top-left corner of figure on canvas in pixels.
     Inspired by matplotlib source: lib/matplotlib/backends/backend_tkagg.py
