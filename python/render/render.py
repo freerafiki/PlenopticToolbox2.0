@@ -1,5 +1,6 @@
 
 import numpy as np
+import pdb
 
 def render_lens_imgs(lenses, lens_imgs, img_shape=None):
 
@@ -32,11 +33,12 @@ def render_lens_imgs(lenses, lens_imgs, img_shape=None):
     # ensure that the center lens is at the image origin
     if img_shape is None:
         img_shape = ((first_lens.pcoord) * 2 + 1).astype(int)
-
-    if len(first_lens.col_img.shape) == 3:
-        hl, wl, c = first_lens.col_img.shape
+    
+    # check if it is a colored image or a one-channel gray/disparity image
+    if len(lens_imgs[0,0].shape) == 3:
+        hl, wl, c = lens_imgs[0,0].shape
     else:
-        hl, wl = first_lens.col_img.shape
+        hl, wl = lens_imgs[0,0].shape
         c = 1
 
     # here we create the structure for the image (circle images with the mask)
@@ -48,10 +50,13 @@ def render_lens_imgs(lenses, lens_imgs, img_shape=None):
     ind = np.where(XX**2 + YY**2 < first_lens.inner_radius**2)
     
     # micro image, so it takes the shape of first_lens.col_img_shape
-    if len(first_lens.col_img.shape) == 3:
+    
+    if len(lens_imgs[0,0].shape) == 3:
         img = np.zeros((img_shape[0], img_shape[1], c))
     else:
         img = np.zeros((img_shape))
+     
+    #img = np.zeros((lens_imgs[0,0].shape))
     
     for key in lenses:
         
