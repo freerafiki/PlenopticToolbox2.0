@@ -4,11 +4,11 @@ The samples given here are intended to give some hints about how to use the avai
 
 Up to now four scripts are provided, more can be added in case of request (just write me at lpa@informatik.uni-kiel.de)
 
-### Read the image and change between micro-images and subaperture images (differentviews.py).
+#### Read the image and change between micro-images and subaperture images (differentviews.py).
 
 Since many people are used to the Lytro (Plenoptic 1.0 Cameras) this script allows you to exchange the way the data is shown. Plenoptic 2.0 Cameras have different physical properties, thus the subaperture views are quite small and low-quality. The script is mostly thought as an example of what you would get treating these kind of images as if they were Lytro images.
 
-## Crop the image (crop_image.py)
+#### Crop the image (crop_image.py)
 
 Since the images are taken with high-resolution cameras and such type of images require a high computational effort, the calculations may last several minutes and make it quite annoying, therefore I provide a script to crop an image in order to speed up calculations for testing. The code is for research and prototyping purposes, using Python and C (via Cython) to guarantee a trade-off between usability (debugging and testing) and performance, but is not optimized for real-time and on less powerful computer can be slow.
 
@@ -19,3 +19,7 @@ A short example of how to read an image and calculate its disparity map. Several
 For more detail about parameters, please refer to the Papers
 - _Fleischmann O. and Koch R, Lens-Based Depth Estimation for Multi-focus Plenoptic Cameras, GCPR, 2014_
 - _Palmieri L. and Koch R, Optimizing the Lens Selection Process for Multi-Focus Plenoptic Cameras and Numerical Evaluation, LF4CV @ CVPR, 2017_
+
+#### Create the all-in-focus image (allinfocus.py)
+
+Using both the colored image and the corresponding disparity map as input, it creates both all-in-focus images. It can be useful for visualization or comparison purposes, but it is at the actual point quite basic and not optimal.
