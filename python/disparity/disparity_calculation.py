@@ -129,8 +129,42 @@ def lens_sweep(src_lens, dst_lenses, disparities, technique, hws=1, max_cost=10.
 
             dst_img = dst_lens.img_interp(dst_1d[:, 0], dst_1d[:, 1])    
             
-            # 
-            diff = np.abs(dst_img - src_img)
+            # Here the costs are calculated using the chosen technique
+            if technique == 'ssd':
+                
+                diff = np.pow((dst_img - src_img), 2)
+                
+            elif technique == 'censusv3':
+            
+                w, h = src_img.shape
+
+                #Initialize output array
+                census_src = np.zeros((h-2, w-2), dtype='uint8')
+                census_dst = np.zeros((h-2, w-2), dtype='uint8')
+                
+                #centre pixels, which are offset by (1, 1)
+                cp = src_img[1:h-1, 1:w-1]
+
+                #offsets of non-central pixels 
+                offsets = [(u, v) for v in range(3) for u in range(3) if not u == 1 == v]
+
+                #Do the pixel comparisons
+                for u,v in offsets:
+                    census_src = (census_src << 1) | (src_img[v:v+h-2, u:u+w-2] >= cp)   
+                    census_dst = (census_dst << 1) | (dst_img[v:v+h-2, u:u+w-2] >= cp)
+
+                #Convert transformed data to image
+                #pdb.set_trace()
+                src_cens_img = np.zeros(src_img.shape)
+                src_cens_img[1:h-1,1:w-1] = census_src
+                dst_cens_img = np.zeros(src_img.shape)
+                dst_cens_img[1:h-1,1:w-1] = census_dst
+                diff = np.abs(dst_cens_img - src_cens_img)
+                diff /= 255.0
+                
+            else:
+                
+                diff = np.abs(dst_img - src_img)
 
             # select only visible area of the costs
             diff *= mask_ind_inv
@@ -163,118 +197,6 @@ def convertRGB2Gray(img):
             img_gray[x,y] = 0.299 * img[x,y,0] + 0.587 * img[x,y,1] + 0.114 * img[x,y,2]
 
     return img_gray
-    
-def census(a,b):
-
-    # convert to gray
-    
-    #c = convertRGB2Gray(a)
-    #d = convertRGB2Gray(b)
-    c = a
-    d = b
-    
-    #create left and right part
-    center = math.floor( a.shape[0] / 2)
-    
-    cl = c[center, center]
-    cr = d[center, center]
-    
-    win_size = a.shape[0]
-    hws = math.floor(win_size / 2)
-    w_a = np.zeros(win_size * win_size)
-    w_b = np.zeros(win_size * win_size)
-    track = 0
-    for e in range(0, win_size):
-        for f in range(0, win_size):
-            cur_val = c[f, e]
-            if cur_val - cl < 0:
-                w_a[track] = 0
-            else:
-                w_a[track] = 1
-                
-            cur_val = d[f, e]
-            if cur_val - cr < 0:
-                w_b[track] = 0
-            else:
-                w_b[track] = 1
-                
-            track += 1
-    #pdb.set_trace()
-    diff = hamming_diff(w_a, w_b)
-    
-    return diff
-
-def census_v2(a,b):
-
-    # convert to gray
-    censustep = 0.10
-    
-    #c = convertRGB2Gray(a)
-    #d = convertRGB2Gray(b)
-    c = a
-    d = b
-    
-    #create left and right part
-    center = math.floor( a.shape[0] / 2)
-    
-    cl = c[center, center]
-    cr = d[center, center]
-    
-    win_size = a.shape[0]
-    hws = math.floor(win_size / 2)
-    w_a = np.zeros(win_size * win_size)
-    w_b = np.zeros(win_size * win_size)
-    track = 0
-    confidence = 0
-    for e in range(0, win_size):
-        for f in range(0, win_size):
-            cur_val = c[f, e]
-            if cur_val - cl < -censustep:
-                w_a[track] = 0
-            elif cur_val - cl < 0:
-                w_a[track] = 1
-            elif cur_val - cl < censustep:
-                w_a[track] = 2
-            else:
-                w_a[track] = 3
-            confidence += w_a[track]
-            
-            #print("{0},{1},{2}".format(d,f,e))    
-            cur_val = d[f, e]
-            if cur_val - cr < -censustep:
-                w_b[track] = 0
-            elif cur_val - cr < 0:
-                w_b[track] = 1
-            elif cur_val - cr < censustep:
-                w_b[track] = 2
-            else:
-                w_b[track] = 3
-                
-            track += 1
-    #pdb.set_trace()
-    diff = hamming_diff(w_a, w_b)
-    
-    return diff, confidence
-    
-def hamming_diff(a, b):
-
-    """
-    Compute the Hamming Distance between two "words" (one dimensional binary arrays)
-    
-    Parameters
-    ----------
-    a and b must be one dimensional and binary integers
-    """
-    
-    assert len(a) == len(b)
-    
-    diff = 0
-    
-    for i in range(0, len(a)):
-        
-        diff += np.abs(a[i] - b[i])
-        
-    return diff
 
 def merge_costs_additive(cost_volumes, max_cost):
     
