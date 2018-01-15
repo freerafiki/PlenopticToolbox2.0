@@ -7,7 +7,7 @@ It contains the following folders:
 - microlens: The object structure used for each micro-lens is built here
 - disparity: It contains the code for estimating disparity map from a single image
 - rendering: It takes care of the rendering process, showing the image and calculating the all-in-focus images
-- sample: Some samples to show how the code works
+- sample: Some samples to show how the code works (check the sample folder for a more detailed explanation)
 
 In order to work with the python library, you need a version of python 3 or higher installed in your computer.
 The structure of the python code requires that you set the environmental variable of your computer 
