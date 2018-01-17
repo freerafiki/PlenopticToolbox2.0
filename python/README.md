@@ -24,7 +24,7 @@ sys.path.append('/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python')
 export PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python
 ```
 
-There is another way to set the environmental variable at login, by editing the right configuration file ([here there is a more detailed explanation about which file to edit](https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps#setting-environmental-variables-at-login)
+There is another way to set the environmental variable at login, by editing the right configuration file, either `~/.bash_profile` or `~/.bashrc` ([here there is a more detailed explanation about which file to edit](https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps#setting-environmental-variables-at-login))
 
 In the file it should be added the line
 ```
