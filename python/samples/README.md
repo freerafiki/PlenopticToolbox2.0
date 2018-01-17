@@ -4,7 +4,7 @@ The samples given here are intended to give some hints about how to use the avai
 
 Up to now four scripts are provided, more can be added in case of request (just write me at lpa@informatik.uni-kiel.de)
 
-#### Read the image and change between micro-images and subaperture images (differentviews.py). (NOT READY YET)
+#### Read the image and change between micro-images and subaperture images (subapertureimages.py).
 
 Since many people are used to the Lytro (Plenoptic 1.0 Cameras) this script allows you to exchange the way the data is shown. Plenoptic 2.0 Cameras have different physical properties, thus the subaperture views are quite small and low-quality. The script is mostly thought as an example of what you would get treating these kind of images as if they were Lytro images.
 
