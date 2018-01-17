@@ -12,7 +12,7 @@ It contains the following folders:
 #### Dependencies and requirements
 In order to work with the python library, you need:
 - version of python 3 or higher installed in your computer.
-- a C++ compiler
+- a C++ compiler and Cython (version 3 or higher is preferable)
 
 Moreover, the structure of the python code requires that you set the environmental variable of your computer 
 `PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python`
