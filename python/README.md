@@ -9,14 +9,18 @@ It contains the following folders:
 - rendering: It takes care of the rendering process, showing the image and calculating the all-in-focus images
 - sample: Some samples to show how the code works (check the sample folder for a more detailed explanation)
 
-In order to work with the python library, you need a version of python 3 or higher installed in your computer.
-The structure of the python code requires that you set the environmental variable of your computer 
+#### Dependencies and requirements
+In order to work with the python library, you need:
+- version of python 3 or higher installed in your computer.
+- a C++ compiler
+
+Moreover, the structure of the python code requires that you set the environmental variable of your computer 
 `PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python`
 
 This can be done temporarily in two ways (temporarily means this has to be done everytime the python scripts have to be launched):
 - in python, at the beginning of the code, using sys
 ```python
-import sys.path
+import sys
 sys.path.append('/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python')
 ```
 - in the terminal window, by using the command
