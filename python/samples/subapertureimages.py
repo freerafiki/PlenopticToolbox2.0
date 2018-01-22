@@ -2,7 +2,7 @@
 Read a Raytrix images and switch to subaperture views
 Shows the two images aside and then save the new one.
 ----
-@version v1 - December 2017
+@version v1 - January 2017
 @author Luca Palmieri
 """
 import sys
