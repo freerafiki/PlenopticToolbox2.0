@@ -1,6 +1,6 @@
 """
-Sample code to read an image and estimate the disparity
-Parameters can be input by hand or predefinite ones will be used
+Read a Raytrix images and switch to subaperture views
+Shows the two images aside and then save the new one.
 ----
 @version v1 - December 2017
 @author Luca Palmieri
