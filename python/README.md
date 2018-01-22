@@ -14,6 +14,13 @@ In order to work with the python library, you need:
 - version of python 3 or higher installed in your computer.
 - a C++ compiler and Cython (version 3 or higher is preferable)
 
+Once you have installed dependencies, you have to run the setup file `setup.py` that will _cythonize_ the Cython files.
+Use the command
+```
+python setup.py build_ext --inplace
+```
+More detail about the cython compilation [here](http://cython.readthedocs.io/en/latest/src/reference/compilation.html#compiling-with-distutils)
+
 Moreover, the structure of the python code requires that you set the environmental variable of your computer 
 `PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python`
 
