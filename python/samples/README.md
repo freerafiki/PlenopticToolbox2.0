@@ -21,7 +21,7 @@ Since the images are taken with high-resolution cameras and such type of images 
 
 Input Image                |  Disparity Map
 :-------------------------:|:-------------------------:
-![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Disparity.j)
+![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Disparity.jpg)
 
 A short example of how to read an image and calculate its disparity map. Several parameters can be tuned, starting from different similarity measures (SAD, SSD, CENSUS) and other algorithm parameters (minimum and maximum disparity, disparity step, penalty function, threshold for circle of confusion, minimum coverage).
 
