@@ -19,13 +19,18 @@ In order to work with the python library, you need:
 - scipy package (python3-scipy)
 - header files (python3-dev)
 
+##### Cython
+
 Once you have installed dependencies, you have to run the setup file `setup.py` that will _cythonize_ the Cython files.
 Use the command
 ```
 python setup.py build_ext --inplace
 ```
 It should creates two files (.so) in the python folder, and they have to be moved to the disparity folder (still have to figure out a way to do it automatic, sorry)
+
 More detail about the cython compilation [here](http://cython.readthedocs.io/en/latest/src/reference/compilation.html#compiling-with-distutils)
+
+##### PYTHONPATH
 
 Moreover, the structure of the python code requires that you set the environmental variable of your computer 
 `PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python`
@@ -47,6 +52,8 @@ In the file it should be added the line
 ```
 export PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python
 ```
+
+##### TEST
 
 To prove that the environmental variable is set, a simple test can be done using the command `printenv` from terminal, that will print the content of all environmental variables.
 
