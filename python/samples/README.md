@@ -6,21 +6,22 @@ Up to now four scripts are provided, more can be added in case of request (just 
 
 #### Read the image and change between micro-images and subaperture images (subapertureimages.py).
 
-Input Images               |  Subaperture Views
+Input Image                |  Subaperture Views
 :-------------------------:|:-------------------------:
 ![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed_subarpertureimages%20copy.jpg)
-:-------------------------:|:-------------------------:
 
 Since many people are used to the Lytro (Plenoptic 1.0 Cameras) this script allows you to exchange the way the data is shown. Plenoptic 2.0 Cameras have different physical properties, thus the subaperture views are quite small and low-quality. The script is mostly thought as an example of what you would get treating these kind of images as if they were Lytro images.
 The images shown here are downscaled for visualization purposes.
-
-
 
 #### Crop the image (crop_image.py) (NOT READY YET)
 
 Since the images are taken with high-resolution cameras and such type of images require a high computational effort, the calculations may last several minutes and make it quite annoying, therefore I provide a script to crop an image in order to speed up calculations for testing. The code is for research and prototyping purposes, using Python and C (via Cython) to guarantee a trade-off between usability (debugging and testing) and performance, but is not optimized for real-time and on less powerful computer can be slow.
 
 #### Estimate the disparity (disparity_sample.py)
+
+Input Image                |  Disparity Map
+:-------------------------:|:-------------------------:
+![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Disparity.j)
 
 A short example of how to read an image and calculate its disparity map. Several parameters can be tuned, starting from different similarity measures (SAD, SSD, CENSUS) and other algorithm parameters (minimum and maximum disparity, disparity step, penalty function, threshold for circle of confusion, minimum coverage).
 
