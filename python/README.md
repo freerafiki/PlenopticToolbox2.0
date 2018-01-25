@@ -9,6 +9,10 @@ It contains the following folders:
 - rendering: It takes care of the rendering process, showing the image and calculating the all-in-focus images
 - sample: Some samples to show how the code works (check the sample folder for a more detailed explanation)
 
+And the following files:
+- setup.py: used for the cython compilation of the sgm file
+- plenopticGUI.py: a basic graphical user interface to load images and estimate disparity. It is still a beta version for testing, it probably has some bugs
+
 #### Dependencies and requirements
 In order to work with the python library, you need:
 - version of python 3 or higher (using python3.6)
