@@ -8,6 +8,8 @@ Up to now four scripts are provided, more can be added in case of request (just 
 
 Since many people are used to the Lytro (Plenoptic 1.0 Cameras) this script allows you to exchange the way the data is shown. Plenoptic 2.0 Cameras have different physical properties, thus the subaperture views are quite small and low-quality. The script is mostly thought as an example of what you would get treating these kind of images as if they were Lytro images.
 
+
+
 #### Crop the image (crop_image.py) (NOT READY YET)
 
 Since the images are taken with high-resolution cameras and such type of images require a high computational effort, the calculations may last several minutes and make it quite annoying, therefore I provide a script to crop an image in order to speed up calculations for testing. The code is for research and prototyping purposes, using Python and C (via Cython) to guarantee a trade-off between usability (debugging and testing) and performance, but is not optimized for real-time and on less powerful computer can be slow.
