@@ -1,3 +1,11 @@
+"""
+Basic graphical user interface for loading and processing plenoptic 2.0 images.
+It stores only up to 4 images, and it can compute disparity from a single image.
+New functionalities will be added later on.
+------
+@version 1 - January 2018
+@author Luca Palmieri
+"""
 import tkinter as tk
 from tkinter import *
 from PIL import Image
