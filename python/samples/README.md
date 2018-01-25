@@ -6,6 +6,8 @@ Up to now four scripts are provided, more can be added in case of request (just 
 
 #### Read the image and change between micro-images and subaperture images (subapertureimages.py).
 
+![Input Image](Dragon_Processed copy.jpg) ![Subaperture Views](Dragon_Processed_subapertureviews copy.jpg)
+
 Since many people are used to the Lytro (Plenoptic 1.0 Cameras) this script allows you to exchange the way the data is shown. Plenoptic 2.0 Cameras have different physical properties, thus the subaperture views are quite small and low-quality. The script is mostly thought as an example of what you would get treating these kind of images as if they were Lytro images.
 
 
