@@ -11,8 +11,13 @@ It contains the following folders:
 
 #### Dependencies and requirements
 In order to work with the python library, you need:
-- version of python 3 or higher installed in your computer.
+- version of python 3 or higher (using python3.6)
 - a C++ compiler and Cython (version 3 or higher is preferable)
+- matplot libraries (python3-matplotlib)
+- tk for the GUI (python3-tk)
+- numpy package (python3-numpy)
+- scipy package (python3-scipy)
+- header files (python3-dev)
 
 Once you have installed dependencies, you have to run the setup file `setup.py` that will _cythonize_ the Cython files.
 Use the command
