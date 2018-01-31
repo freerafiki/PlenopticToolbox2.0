@@ -51,7 +51,7 @@ if __name__ == "__main__":
     plt.imshow(I)
     plt.subplot(122)
     plt.title("Disparity Image")
-    plt.imshow(disp, cmap='jet')
+    plt.imshow(disp, vmin=disparities[0], vmax=disparities[-1], cmap='jet')
     plt.show()
     
     if Dgt is not None:
