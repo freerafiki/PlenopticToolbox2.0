@@ -2,7 +2,7 @@
 Sample code to read an image and estimate the disparity
 Parameters can be input by hand or predefinite ones will be used
 ----
-@veresion v1 - December 2017
+@veresion v1.1 - Januar 2017
 @author Luca Palmieri
 """
 import disparity.disparity_methods as rtxmain
@@ -11,6 +11,7 @@ import argparse
 import os
 import json
 import pdb
+import numpy
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
