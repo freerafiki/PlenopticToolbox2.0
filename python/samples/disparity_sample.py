@@ -11,7 +11,7 @@ import argparse
 import os
 import json
 import pdb
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -84,9 +84,9 @@ if __name__ == "__main__":
         err_ana_name = "{0}/error_analysis_{1}_{2}_{3}.json".format(args.output_path, disparities[0], disparities[-1], params.technique) 
         err_ana_csv = "{0}/error_analysis_{1}_{2}_{3}.csv".format(args.output_path, disparities[0], disparities[-1], params.technique) 
         err_arr_csv = "{0}/error_array_{1}_{2}_{3}.csv".format(args.output_path, disparities[0], disparities[-1], params.technique)      
-        imgIO.write_csv_file(error_analysis, err_ana_csv)
+        imgIO.write_csv_file(error_analysis, err_ana_csv, params.technique)
         plotting_arrays = [plotting, plottingdisc, plottingsmth]
-        imgIO.write_csv_array(plotting_arrays, err_arr_csv)
+        imgIO.write_csv_array(plotting_arrays, err_arr_csv, params.technique)
     
     plt.imsave(disp_name, disp, vmin=disparities[0], vmax=disparities[-1], cmap='gray')
     plt.imsave(disp_name_col, disp, vmin=disparities[0], vmax=disparities[-1], cmap='jet')
