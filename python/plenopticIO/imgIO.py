@@ -3,7 +3,7 @@ File taking care of managing the images, reading and saving
 It works with both real (with .xml calibration file) and synthetic images (with scene.json file)
 The structure used to store micro-lens images is a python dictionary with lens element
 ----
-@veresion v1 - December 2017
+@veresion v1.1 - Januar 2017
 @author Luca Palmieri
 """
 
@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 import plenopticIO.lens_grid as rtxhexgrid
 import microlens.lens as rtxlens
 from xml.etree import ElementTree
+import pdb
+import os
+import json
 
 def _float_from_element(parent, element):
 
@@ -428,7 +431,53 @@ def _xml_template():
 ''')
     return s
     
+def write_csv_file(error_analysis, err_analysis_csv_name):
     
+    file = open(err_analysis_csv_name,'w')
+    file.write("CSV file with ,ERROR MEASUREMENTS ,for ,{0} ,technique\n".format(params.technique))
+    file.write("\n")
+    file.write(", , ,0,1,2\n")
+    file.write("{0},BadPix1, , , , ,{1}\n".format(params.technique, error_analysis['badpix1_avg']))
+    file.write(",BadPix2, , , , ,{0}\n".format(error_analysis['badpix2_avg']))
+    file.write(",AvgErr, ,{0},{1},{2}\n".format(error_analysis['avg_error'][0]['err'], error_analysis['avg_error'][1]['err'], error_analysis['avg_error'][2]['err']))
+    file.write(",StdDevAvg, ,{0},{1},{2}\n".format(error_analysis['avg_error'][0]['std'], error_analysis['avg_error'][1]['std'], error_analysis['avg_error'][2]['std']))
+    file.write(",MSE, ,{0},{1},{2}\n".format(error_analysis['mse_error'][0]['err'], error_analysis['mse_error'][1]['err'], error_analysis['mse_error'][2]['err']))
+    file.write(",StdDevMSE, ,{0},{1},{2}\n".format(error_analysis['mse_error'][0]['std'], error_analysis['mse_error'][1]['std'], error_analysis['mse_error'][2]['std']))
+    file.write(",Bumpiness, ,{0},{1},{2}\n".format(error_analysis['bumpiness'][0]['err'], error_analysis['bumpiness'][1]['err'], error_analysis['bumpiness'][2]['err']))
+    file.write(",StdDevBump, ,{0},{1},{2}\n".format(error_analysis['bumpiness'][0]['std'], error_analysis['bumpiness'][1]['std'], error_analysis['bumpiness'][2]['std']))
+    file.write(",AvgErrDisc, ,{0},{1},{2}\n".format(error_analysis['disc_err'][0]['err'], error_analysis['disc_err'][1]['err'], error_analysis['disc_err'][2]['err']))
+    file.write(",StdDevDisc, ,{0},{1},{2}\n".format(error_analysis['disc_err'][0]['std'], error_analysis['disc_err'][1]['std'], error_analysis['disc_err'][2]['std']))
+    file.write(",AvgErrSmooth, ,{0},{1},{2}\n".format(error_analysis['smooth_err'][0]['err'], error_analysis['smooth_err'][1]['err'], error_analysis['smooth_err'][2]['err']))
+    file.write(",StdDevSmooth, ,{0},{1},{2}\n".format(error_analysis['smooth_err'][0]['std'], error_analysis['smooth_err'][1]['std'], error_analysis['smooth_err'][2]['std']))
+    file.write(",BadPix1Disc, , , , ,{0}\n".format(error_analysis['badpix1disc']))
+    file.write(",BadPix1Smooth, , , , ,{0}\n".format(error_analysis['badpix1smooth']))  
+    file.write(",BadPix2Disc, , , , ,{0}\n".format(error_analysis['badpix2disc']))
+    file.write(",BadPix2Smooth, , , , ,{0}\n".format(error_analysis['badpix2smooth']))   
+    
+def write_csv_array(arrays, name):
+
+    err=arrays[0]
+    disc=arrays[1]
+    smth=arrays[2]
+    file = open(name,'w')
+    file.write("CSV file with ,NUMBER OF WRONG PIXELS, against ,ERROR THRESHOLD ,for ,{0} ,technique\n".format(params.technique))
+    file.write("\n")
+    file.write("Error's Thresholds, ,")
+    for satana in range(len(err)):
+        file.write("{0},".format(0.1*satana))
+    file.write("\n")
+    file.write("Wrong Pixels, ,")
+    for satana in range(len(err)):
+        file.write("{0},".format(err[satana]))
+    file.write("\n")  
+    file.write("Wrong Pixels Disc, ,")
+    for satana in range(len(disc)):
+        file.write("{0},".format(disc[satana]))
+    file.write("\n")     
+    file.write("Wrong Pixels Smooth, ,")
+    for satana in range(len(smth)):
+        file.write("{0},".format(smth[satana]))
+    file.write("\n")    
     
     
     
