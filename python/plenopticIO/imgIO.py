@@ -431,13 +431,13 @@ def _xml_template():
 ''')
     return s
     
-def write_csv_file(error_analysis, err_analysis_csv_name):
+def write_csv_file(error_analysis, err_analysis_csv_name, technique):
     
     file = open(err_analysis_csv_name,'w')
-    file.write("CSV file with ,ERROR MEASUREMENTS ,for ,{0} ,technique\n".format(params.technique))
+    file.write("CSV file with ,ERROR MEASUREMENTS ,for ,{0} ,technique\n".format(technique))
     file.write("\n")
     file.write(", , ,0,1,2\n")
-    file.write("{0},BadPix1, , , , ,{1}\n".format(params.technique, error_analysis['badpix1_avg']))
+    file.write("{0},BadPix1, , , , ,{1}\n".format(technique, error_analysis['badpix1_avg']))
     file.write(",BadPix2, , , , ,{0}\n".format(error_analysis['badpix2_avg']))
     file.write(",AvgErr, ,{0},{1},{2}\n".format(error_analysis['avg_error'][0]['err'], error_analysis['avg_error'][1]['err'], error_analysis['avg_error'][2]['err']))
     file.write(",StdDevAvg, ,{0},{1},{2}\n".format(error_analysis['avg_error'][0]['std'], error_analysis['avg_error'][1]['std'], error_analysis['avg_error'][2]['std']))
@@ -454,13 +454,13 @@ def write_csv_file(error_analysis, err_analysis_csv_name):
     file.write(",BadPix2Disc, , , , ,{0}\n".format(error_analysis['badpix2disc']))
     file.write(",BadPix2Smooth, , , , ,{0}\n".format(error_analysis['badpix2smooth']))   
     
-def write_csv_array(arrays, name):
+def write_csv_array(arrays, name, technique):
 
     err=arrays[0]
     disc=arrays[1]
     smth=arrays[2]
     file = open(name,'w')
-    file.write("CSV file with ,NUMBER OF WRONG PIXELS, against ,ERROR THRESHOLD ,for ,{0} ,technique\n".format(params.technique))
+    file.write("CSV file with ,NUMBER OF WRONG PIXELS, against ,ERROR THRESHOLD ,for ,{0} ,technique\n".format(technique))
     file.write("\n")
     file.write("Error's Thresholds, ,")
     for satana in range(len(err)):
