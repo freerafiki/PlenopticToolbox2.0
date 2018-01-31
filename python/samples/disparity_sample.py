@@ -58,7 +58,7 @@ if __name__ == "__main__":
         plt.imsave(gt_name, Dgt, vmin=disparities[0], vmax=disparities[-1], cmap='gray')
         plt.imsave(gt_name_col, Dgt, vmin=disparities[0], vmax=disparities[-1], cmap='jet')
 
-    if len(error_measurements):
+    if error_measurements is not None:
         #save in a file the errors
         error_analysis = dict()
         error_analysis['avg_error'] = error_measurements[0]
