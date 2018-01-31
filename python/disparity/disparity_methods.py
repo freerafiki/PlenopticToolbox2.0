@@ -3,7 +3,7 @@ The main architecture of the disparity estimation algorithm is here:
 the structure containing the microimage is used to calculate per-image disparity map
 the final images are returned
 ----
-@veresion v1 - December 2017
+@veresion v1.1 - Januar 2017
 @author Luca Palmieri
 """
 import disparity.disparity_calculation as rtxdisp
@@ -17,6 +17,7 @@ import math
 import os
 import json
 import pdb
+import cv2
 
 
 def estimate_disp(args):
@@ -69,13 +70,15 @@ def estimate_disp(args):
     Dwta = rtxrender.render_lens_imgs(lenses, wta_depths_interp)
     
     lens_data = dict()
-    #gt_disp = dict()
     col_data = dict()
+    if scene_type == 'synth':
+        gt_disp = dict()
         
     for lcoord in lenses:
         lens_data[lcoord] = lenses[lcoord].img
-        #gt_disp[lcoord] = lenses[lcoord].disp_img
         col_data[lcoord] = lenses[lcoord].col_img
+        if scene_type == 'synth':
+            gt_disp[lcoord] = lenses[lcoord].disp_img
         
     I = rtxrender.render_lens_imgs(lenses, lens_data)
     Dconf = rtxrender.render_lens_imgs(lenses, confidence)
@@ -89,7 +92,7 @@ def estimate_disp(args):
         
     if scene_type == 'synth':
         Dgt = rtxrender.render_lens_imgs(lenses, gt_disp)
-        sgm_err, sgm_err_mask, sgm_err_mse, err_img, err_img_thresh = eval_disp_err_v3(lenses, fine_disps_interp)
+        error_measurements = analyze_disp(lenses, fine_disps_interp, True)
     else:
         Dgt = None
         sgm_err = None
@@ -99,14 +102,185 @@ def estimate_disp(args):
         err_img_r = None
         img_s = None
 
-    return Icol, Dsgm, Dwta, Dgt, Dconf, Dcoarse, sgm_err, wta_err, disparities, num_comparisons, disp_avg, sgm_err_mask, err_img_r, img_s, sgm_err_mse, new_offset
+    return Icol, Dsgm, Dwta, Dgt, Dconf, Dcoarse, disparities, num_comparisons, disp_avg, new_offset, error_measurements
+
+def _has_neighbours(lens, lenses, neighbours):
+        
+    for l in neighbours:
+        if tuple(l + lens.lcoord) not in lenses:
+            return False
+    
+    return True
+
+def get_depth_discontinuities(lenses):
+    """
+    It computes via Canny (opencv implementation) the discontinuities on the ground truth
+    It returns two dictionaries with image masks (one discontinuities, one smooth areas)
+    After Canny dilation is used to get more consistent border (ideally 3 pixels large edges)
+    ---
+    January 2018
+    """
+    disc = dict()
+    smooth = dict()
+    for key in lenses:
+        current_disp = lenses[key].disp_img
+        norm_disp = current_disp / np.max(current_disp)
+        int_disp = np.uint8(norm_disp * 255)
+        canny = cv2.Canny(int_disp, 100, 200)
+        kernel = np.ones((3,3),np.uint8)
+        dilation = cv2.dilate(canny,kernel,iterations = 1)
+        disc[key] = dilation / 255
+        smooth[key] = (255 - dilation) / 255
+    
+    return disc, smooth
+    
+def analyze_disp(lenses, est_depths, depth_discontinuities=False, max_ring=5):
+
+    """
+    Used only on synthetic images
+    Loop through the estimated depth and calculate the following error measurements:
+    - average error
+    - mean squared error (MSE)
+    - standard deviation
+    - BadPix 1.0 and 2.0 (% of pixels with error higher than 1% or 2%
+    - (Error on depth discontinuities if the third parameter is True)
+    """
+    #pdb.set_trace()
+    err_avg = {0: np.array([]), 1: np.array([]), 2: np.array([])}
+    err_mask = {0: np.array([]), 1: np.array([]), 2: np.array([])}
+    err_mse = {0: np.array([]), 1: np.array([]), 2: np.array([])}
+    bump = {0: np.array([]), 1: np.array([]), 2: np.array([])}
+    bump_thresh = 0.25
+    badPix1 = np.zeros((len(est_depths)))
+    badPix2 = np.zeros((len(est_depths)))
+    badPixGraph = np.zeros((len(est_depths), 21))
+    badpixindex = 0
+    
+    # evaluate error on depth discontinuities
+    badPix1Disc = np.zeros((len(est_depths)))
+    badPix1Smooth = np.zeros((len(est_depths)))
+    badPix2Disc = np.zeros((len(est_depths)))
+    badPix2Smooth = np.zeros((len(est_depths)))
+    badPixGraphDisc = np.zeros((len(est_depths), 21))
+    badPixGraphSmooth = np.zeros((len(est_depths), 21))
+    disc, smooth = get_depth_discontinuities(lenses)
+    avgErrDisc = {0: np.array([]), 1: np.array([]), 2: np.array([])}
+    avgErrSmooth = {0: np.array([]), 1: np.array([]), 2: np.array([])}
+    
+    nb_tmp = []
+    for ring in range(max_ring):
+        nb_tmp.extend(rtxhexgrid.HEX_OFFSETS[ring])
+        
+    #pdb.set_trace()    
+    for lcoord in est_depths:
+        if _has_neighbours(lenses[lcoord], lenses, nb_tmp) is False:
+            continue
+    
+        est = est_depths[lcoord]
+        gt = lenses[lcoord].disp_img
+        ind = est > 0
+        #pdb.set_trace()
+        ft = lenses[lcoord].focal_type
+        lens = lenses[lcoord]
+        mask = ((lens.grid.xx**2 + lens.grid.yy**2) <= lens.inner_radius**2)       
+        err_avg[ft] = np.append(err_avg[ft], np.ravel(np.abs(est[mask] - gt[mask])))
+        #pdb.set_trace()
+        abs_diff = np.ravel(np.abs(est[mask] - gt[mask]))
+        err_mask[ft] = np.append(err_mask[ft], abs_diff)
+        bumpy = np.clip(abs_diff, 0, bump_thresh)
+        bump[ft] = bumpy
+        err_mse[ft] = np.append(err_mse[ft], np.ravel( (est[mask] - gt[mask])**2 ))
+        err_img_cur = np.abs(est - gt)
+        # mask
+        to_zero = ((lens.grid.xx**2 + lens.grid.yy**2) > lens.inner_radius**2)
+        err_img_cur[to_zero] = 0
+        badPix1[badpixindex] += len(np.where(err_img_cur > 1)[0])
+        badPix2[badpixindex] += len(np.where(err_img_cur > 2)[0])
+        #pdb.set_trace()
+        for i in range(0,21):
+            badPixGraph[badpixindex, i] += len(np.where(err_img_cur > 0.1*i)[0])
+        
+        if depth_discontinuities:
+            #pdb.set_trace()
+            disc_err = err_img_cur[disc[lcoord] > 0.5]
+            smth_err = err_img_cur[disc[lcoord] < 0.5]
+            #print(len(disc_err), len(smth_err), len(np.ravel( (est[mask] - gt[mask])**2 )))
+            avgErrDisc[ft] = np.append(avgErrDisc[ft], disc_err)
+            avgErrSmooth[ft] = np.append(avgErrSmooth[ft], smth_err)
+            badPix1Disc[badpixindex] += len(np.where(disc_err > 1)[0])
+            badPix1Smooth[badpixindex] += len(np.where(smth_err > 1)[0])
+            badPix2Disc[badpixindex] += len(np.where(disc_err > 2)[0])
+            badPix2Smooth[badpixindex] += len(np.where(smth_err > 2)[0])
+            for i in range(0,21):
+                badPixGraphDisc[badpixindex, i] += len(np.where(disc_err > 0.1*i)[0])
+                badPixGraphSmooth[badpixindex, i] += len(np.where(smth_err > 0.1*i)[0])
+        badpixindex += 1    
+        
+    #pdb.set_trace()    
+    final_err = dict()
+    final_err_mask = dict()
+    final_err_mse = dict()
+    bumpiness = dict()
+    depth_disc = dict() 
+    depth_smooth = dict()
+    
+    for key in err_avg:
+    
+        #pdb.set_trace()
+        final_err[key] = dict()
+        final_err[key]['err'] = np.mean(err_avg[key])
+        #print(final_err[key]['err'])
+        final_err[key]['std'] = np.std(err_avg[key])
+        final_err[key]['max'] = np.max(err_avg[key])
+        final_err[key]['num'] = np.mean(err_avg[key] >= (final_err[key]['err'] + 2*final_err[key]['std']))   
+         
+
+
+        final_err_mask[key] = dict()
+        final_err_mask[key]['err'] = np.mean(err_mask[key])
+        #print(final_err[key]['err'])
+        final_err_mask[key]['std'] = np.std(err_mask[key])
+        final_err_mask[key]['max'] = np.max(err_mask[key])
+        final_err_mask[key]['num'] = np.mean(err_mask[key] >= (final_err_mask[key]['err'] + 2*final_err_mask[key]['std']))
+
+
+
+        final_err_mse[key] = dict()
+        final_err_mse[key]['err'] = np.mean(err_mse[key])
+        #print(final_err[key]['err'])
+        final_err_mse[key]['std'] = np.std(err_mse[key])
+        final_err_mse[key]['max'] = np.max(err_mse[key])
+        final_err_mse[key]['num'] = np.mean(err_mse[key] >= (final_err_mse[key]['err'] + 2*final_err_mse[key]['std']))
+    
+    
+
+        bumpiness[key] = dict()
+        bumpiness[key]['err'] = np.mean(bump[key])
+        #print(final_err[key]['err'])
+        bumpiness[key]['std'] = np.std(bump[key])
+        bumpiness[key]['max'] = np.max(bump[key])
+        bumpiness[key]['num'] = np.mean(bump[key] >= (bumpiness[key]['err'] + 2*bumpiness[key]['std']))  
+    
+       
+        if depth_discontinuities:
+ 
+            depth_disc[key] = dict()
+            depth_disc[key]['err'] = np.mean(avgErrDisc[key])
+            depth_disc[key]['std'] = np.std(avgErrDisc[key])
+            depth_disc[key]['max'] = np.max(avgErrDisc[key])
+            depth_smooth[key] = dict()
+            depth_smooth[key]['err'] = np.mean(avgErrSmooth[key])
+            depth_smooth[key]['std'] = np.std(avgErrSmooth[key])
+            depth_smooth[key]['max'] = np.max(avgErrSmooth[key])
+        
+    return final_err, final_err_mask, final_err_mse, [badPix1, badPix2, badPixGraph], bumpiness, [depth_disc, depth_smooth, badPix1Disc, badPix2Disc, badPix1Smooth, badPix2Smooth, badPixGraphDisc, badPixGraphSmooth]
 
 def load_scene(filename):
 
     basename, suffix = os.path.splitext(filename)
 
     if suffix == '.json':
-          lenses = rtxsio.load(filename)
+          lenses = rtxIO.load_from_json(filename)
           scene_type = 'synth'
     elif suffix == '.xml':
         img_filename = basename + '.png'
@@ -182,8 +356,8 @@ def real_lut(lens, lenses, coarse_costs, disparities, max_cost=10.0, nb_args=Non
 
     tref = rtxhexgrid.hex_focal_type(lens.lcoord)
     
-    #read the lut
-    lut_filename = 'disparity/lut_table.json'
+    #read the lut    
+    lut_filename = '../disparity/lut_table.json'
     with open(lut_filename, 'r') as f:
         lut_str = json.load(f)
     
@@ -793,8 +967,8 @@ class EvalParameters(object):
 
     def __init__(self):
 
-        self.max_disp_fac = 0.4 
-        self.min_disp_fac = 0.05 
+        self.max_disp_fac = 0.3
+        self.min_disp_fac = 0.02 
         self.max_ring = 7
         self.max_cost = 10.0
         self.penalty1 = 0.01 

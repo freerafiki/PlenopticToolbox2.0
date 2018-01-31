@@ -1,7 +1,7 @@
 """
 The algorithm to compute the cost 
 ----
-@veresion v1 - December 2017
+@version v1.1 - Januar 2017
 @author Luca Palmieri
 """
 
@@ -10,6 +10,7 @@ import scipy.ndimage as ndimage
 import math
 import plenopticIO.lens_grid as rtxhexgrid
 import matplotlib.pyplot as plt
+import pdb
 
 def sweep_to_shift_costs(sweep_costs, max_cost):
 
@@ -154,14 +155,20 @@ def lens_sweep(src_lens, dst_lenses, disparities, technique, hws=1, max_cost=10.
                     census_dst = (census_dst << 1) | (dst_img[v:v+h-2, u:u+w-2] >= cp)
 
                 #Convert transformed data to image
-                #pdb.set_trace()
                 src_cens_img = np.zeros(src_img.shape)
                 src_cens_img[1:h-1,1:w-1] = census_src
                 dst_cens_img = np.zeros(src_img.shape)
                 dst_cens_img[1:h-1,1:w-1] = census_dst
                 diff = np.abs(dst_cens_img - src_cens_img)
                 diff /= 255.0
+            
+            elif technique == 'ncc':
                 
+                ncc = calculate_ncc(src_img, dst_img) 
+                ncc += 1
+                ncc /= 2
+                diff = 1 - ncc            
+ 
             else:
                 
                 diff = np.abs(dst_img - src_img)
@@ -187,6 +194,26 @@ def lens_sweep(src_lens, dst_lenses, disparities, technique, hws=1, max_cost=10.
             cost[i, j][src_lens.mask < 1] = max_cost
 
     return cost, src_img, disparities
+
+#@jit
+def calculate_ncc(src_img, dst_img):
+    
+    diff = np.zeros((src_img.shape))
+    d = 1
+    for k in range(d, src_img.shape[0] - (d + 1)):
+        for l in range(d, src_img.shape[1] - (d + 1)):
+            diff[k, l] = correlation_coefficient(dst_img[k - d: k + d + 1, l - d: l + d + 1], src_img[k - d: k + d + 1, l - d: l + d + 1])
+    return diff 
+    
+#@jit   
+def correlation_coefficient(patch1, patch2):
+    product = np.mean((patch1 - patch1.mean()) * (patch2 - patch2.mean()))
+    stds = patch1.std() * patch2.std()
+    if stds == 0:
+        return 0
+    else:
+        product /= stds
+        return product
 
 def convertRGB2Gray(img):
 
