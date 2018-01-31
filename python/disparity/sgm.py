@@ -1,6 +1,6 @@
 
 import numpy as np
-import raytrix.sgm_cost_path as scp
+import sgm_cost_path as scp
 # semi global matching
 import pdb
 
