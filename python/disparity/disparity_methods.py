@@ -101,6 +101,7 @@ def estimate_disp(args):
         sgm_err_mse = None
         err_img_r = None
         img_s = None
+        error_measurements = None
 
     return Icol, Dsgm, Dwta, Dgt, Dconf, Dcoarse, disparities, num_comparisons, disp_avg, new_offset, error_measurements
 
