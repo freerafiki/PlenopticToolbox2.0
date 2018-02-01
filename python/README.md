@@ -22,6 +22,7 @@ In order to work with the python library, you need:
 - numpy package (python3-numpy)
 - scipy package (python3-scipy)
 - header files (python3-dev)
+- opencv for python (python3-opencv)
 
 ##### Cython
 
