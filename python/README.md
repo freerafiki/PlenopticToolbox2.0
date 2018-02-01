@@ -31,7 +31,7 @@ Use the command
 ```
 python setup.py build_ext --inplace
 ```
-It should creates two files (.so) in the python folder, and they have to be moved to the disparity folder (still have to figure out a way to do it automatic, sorry)
+It should create one or two files (.so) in the python folder, and they have to be moved to the disparity folder (still have to figure out a way to do it automatic, sorry)
 
 More detail about the cython compilation [here](http://cython.readthedocs.io/en/latest/src/reference/compilation.html#compiling-with-distutils)
 
