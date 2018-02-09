@@ -17,6 +17,10 @@ The images shown here are downscaled for visualization purposes.
 
 Since the images are taken with high-resolution cameras and such type of images require a high computational effort, the calculations may last several minutes and make it quite annoying, therefore I provide a script to crop an image in order to speed up calculations for testing. The code is for research and prototyping purposes, using Python and C (via Cython) to guarantee a trade-off between usability (debugging and testing) and performance, but is not optimized for real-time and on less powerful computer can be slow.
 
+#### Change the format of the synthetic images (from_synth_to_xml.py)
+
+It reads all micro-images contained in the given folder (where the scene.json file is) and save the image as .png file with his relative .xml configuration file, so that it looks like a real image and can be easier accessed.
+
 #### Estimate the disparity (disparity_sample.py)
 
 Input Image                |  Disparity Map
