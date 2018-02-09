@@ -341,12 +341,14 @@ def save_xml(filename, lenses):
 
     # extract the images as a seperate dictionary for the rendering process
     lens_data = dict()
+    disp_data = dict()
     for lcoord in lenses:
-        lens_data[lcoord] = lenses[lcoord].img
-
+        lens_data[lcoord] = lenses[lcoord].col_img
+        disp_data[lcoord] = lenses[lcoord].disp_img
+        
     # render the MLA image
     img = rtxrender.render_lens_imgs(lenses, lens_data)
-
+    disp = rtxrender.render_lens_imgs(lenses, disp_data)
 
     h, w = img.shape
     m = ((h-1)/2.0, (w-1) / 2.0)
@@ -358,12 +360,14 @@ def save_xml(filename, lenses):
                                         angle=0, lens_border=1.0)
 
     img_filename = "{0}.png".format(filename)
+    disp_filename = "{0}_disp.png".format(filename)
     config_filename = "{0}.xml".format(filename)
 
     with open(config_filename, "w") as f:
         f.write(config)
 
-    plt.imsave(img_filename, img, cmap='gray')
+    plt.imsave(img_filename, img)
+    plt.imsave(img_filename, disp, cmap='jet')
 
     return config
     
