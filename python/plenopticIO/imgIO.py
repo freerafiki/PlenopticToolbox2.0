@@ -11,11 +11,13 @@ import numpy as np
 import scipy.interpolate as sinterp
 import matplotlib.pyplot as plt
 import plenopticIO.lens_grid as rtxhexgrid
+import rendering.render as rend
 import microlens.lens as rtxlens
 from xml.etree import ElementTree
 import pdb
 import os
 import json
+import string
 
 def _float_from_element(parent, element):
 
@@ -144,6 +146,20 @@ def _hex_focal_type(c):
 
     return focal_type 
 
+def load_scene(filename):
+
+    basename, suffix = os.path.splitext(filename)
+
+    if suffix == '.json':
+          lenses = load_from_json(filename)
+          scene_type = 'synth'
+    elif suffix == '.xml':
+        img_filename = basename + '.png'
+        lenses = load_from_xml(img_filename, filename)
+        scene_type = 'real'
+
+    return lenses, scene_type
+    
 def load_from_xml(image_filename, config_filename):
 
     img = plt.imread(image_filename)
@@ -350,7 +366,7 @@ def save_xml(filename, lenses):
     img = rtxrender.render_lens_imgs(lenses, lens_data)
     disp = rtxrender.render_lens_imgs(lenses, disp_data)
 
-    h, w = img.shape
+    h, w = img.shape[0], img.shape[1]
     m = ((h-1)/2.0, (w-1) / 2.0)
     offset = lenses[0, 0].pcoord - np.array(m)
 
@@ -367,7 +383,7 @@ def save_xml(filename, lenses):
         f.write(config)
 
     plt.imsave(img_filename, img)
-    plt.imsave(img_filename, disp, cmap='jet')
+    plt.imsave(disp_filename, disp, cmap='jet')
 
     return config
     
