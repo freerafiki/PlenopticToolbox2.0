@@ -49,7 +49,7 @@ def estimate_disp(args):
     for i in rings: 
         nb_offsets.extend(rtxhexgrid.HEX_OFFSETS[i])
     
-    lenses, scene_type = load_scene(args.filename)
+    lenses, scene_type = rtxIO.load_scene(args.filename)
 
     diam = lenses[0, 0].diameter
     max_disp = float(args.max_disp) 
@@ -83,45 +83,6 @@ def estimate_disp(args):
         coarse_disp = regularize_coarse(lenses, coarse_costs_merged, disparities, penalty1=args.coarse_penalty1, penalty2=args.coarse_penalty2)
         fine_costs = augment_costs_coarse(fine_costs, coarse_disp, lens_variance, disparities, coarse_weight=args.coarse_weight, struct_var=args.struct_var)
     
-    """    
-    #here we want to apply mrf
-    for i, l in enumerate(fine_costs):
-        
-        #pdb.set_trace()
-        if i%1000==0:
-            print("Processing lens {0}".format(i))
-        lens = lenses[l]
-        
-        # prepare the cost shape: disparity axis is third axis (index [2] instead of [0])
-        F = np.flipud(np.rot90(fine_costs[l].T))
-        pdb.set_trace()
-        num_beliefs = len(disparities)
-        base_belief = F
-        smoothness = np.ndarray(shape=(num_beliefs,num_beliefs), dtype=np.float32)
-        for a in range(num_beliefs):
-            for b in range(num_beliefs):
-                smoothness[a][b] = howsmooth(a,b)  
-        mrf = LBP.MRF(F.shape[0], F.shape[1], num_beliefs) 
-        mrf.init_base_belief(base_belief)
-        mrf.init_smoothness(smoothness) 
-        np.set_printoptions(precision=3)
-        #numpy.set_printoptions(linewidth=135)
-        plt.ion()     
-        plt.subplot(221)
-        plt.imshow(mrf.calc_belief(), cmap='jet') 
-        mrf.pass_messages()
-        plt.subplot(222)
-        plt.imshow(mrf.calc_belief(), cmap='jet') 
-        mrf.pass_messages()
-        plt.subplot(223)
-        plt.imshow(mrf.calc_belief(), cmap='jet') 
-        mrf.pass_messages()
-        plt.subplot(224)
-        plt.imshow(lens.disp_img, cmap='jet') 
-        plt.show()
-        #display(mrf.calc_belief())
-        pdb.set_trace()   
-    """        
     fine_disps, fine_disps_interp, fine_val, wta_depths, wta_depths_interp, wta_val, confidence = regularized_fine(lenses, fine_costs, disparities, args.penalty1, args.penalty2, args.max_cost, conf_sigma=args.conf_sigma)
        
     Dsgm = rtxrender.render_lens_imgs(lenses, fine_disps_interp)
@@ -1048,11 +1009,7 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
 def calc_costs_per_lens(lens, nb_lenses, disparities, max_cost, technique):
 
     cost, img, d = rtxdisp.lens_sweep(lens, nb_lenses, disparities, technique, max_cost=max_cost)
-    #print("cost shape: {0}".format(cost.shape))
     coarse_costs = rtxdisp.sweep_to_shift_costs(cost, max_cost)
-    #print("Cost shape: {0}".format(coarse_costs.shape))
-    #print("Coarse costs: {0}".format(coarse_costs))
-    #print("Max cost: {0}".format(max_cost))
     coarse_costs_merged = rtxdisp.merge_costs_additive(coarse_costs, max_cost)
     lens_std = np.std(lens.img[lens.mask > 0])
   
