@@ -4,6 +4,10 @@ The samples given here are intended to give some hints about how to use the avai
 
 Up to now four scripts are provided, more can be added in case of request (just write me at lpa@informatik.uni-kiel.de)
 
+#### Read the image (read_image.py)
+
+Super simple file to test that everything is working. It just reads a file (real or synthetic) by giving as input the path to the configuration file (the .xml, (name of image and configuration file should be the same!) or the .json) and shows the image.
+
 #### Read the image and change between micro-images and subaperture images (subapertureimages.py).
 
 Input Image                |  Subaperture Views
