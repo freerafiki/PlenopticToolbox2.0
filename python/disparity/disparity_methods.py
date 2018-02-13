@@ -18,7 +18,26 @@ import os
 import json
 import pdb
 import cv2
+import disparity.LBP as LBP
+import matplotlib.pyplot as plt
+import matplotlib.image
 
+need_colourbar = False
+def display(whatever, pause=False, matrix=False):
+    plt.clf()
+    if matrix:
+        plt.matshow(whatever, fignum=0)
+    else:
+        plt.imshow(whatever)
+    plt.draw()
+    if pause: input()
+
+def smoothfunc(d):
+    d = abs(d)
+    return math.exp(-(d**2))
+def howsmooth(a,b,threshold=0.1):
+    if smoothfunc(a-b) > threshold: return smoothfunc(a-b)
+    else: return threshold
 
 def estimate_disp(args):
 
@@ -63,7 +82,46 @@ def estimate_disp(args):
     if args.coarse is True:
         coarse_disp = regularize_coarse(lenses, coarse_costs_merged, disparities, penalty1=args.coarse_penalty1, penalty2=args.coarse_penalty2)
         fine_costs = augment_costs_coarse(fine_costs, coarse_disp, lens_variance, disparities, coarse_weight=args.coarse_weight, struct_var=args.struct_var)
-     
+    
+    """    
+    #here we want to apply mrf
+    for i, l in enumerate(fine_costs):
+        
+        #pdb.set_trace()
+        if i%1000==0:
+            print("Processing lens {0}".format(i))
+        lens = lenses[l]
+        
+        # prepare the cost shape: disparity axis is third axis (index [2] instead of [0])
+        F = np.flipud(np.rot90(fine_costs[l].T))
+        pdb.set_trace()
+        num_beliefs = len(disparities)
+        base_belief = F
+        smoothness = np.ndarray(shape=(num_beliefs,num_beliefs), dtype=np.float32)
+        for a in range(num_beliefs):
+            for b in range(num_beliefs):
+                smoothness[a][b] = howsmooth(a,b)  
+        mrf = LBP.MRF(F.shape[0], F.shape[1], num_beliefs) 
+        mrf.init_base_belief(base_belief)
+        mrf.init_smoothness(smoothness) 
+        np.set_printoptions(precision=3)
+        #numpy.set_printoptions(linewidth=135)
+        plt.ion()     
+        plt.subplot(221)
+        plt.imshow(mrf.calc_belief(), cmap='jet') 
+        mrf.pass_messages()
+        plt.subplot(222)
+        plt.imshow(mrf.calc_belief(), cmap='jet') 
+        mrf.pass_messages()
+        plt.subplot(223)
+        plt.imshow(mrf.calc_belief(), cmap='jet') 
+        mrf.pass_messages()
+        plt.subplot(224)
+        plt.imshow(lens.disp_img, cmap='jet') 
+        plt.show()
+        #display(mrf.calc_belief())
+        pdb.set_trace()   
+    """        
     fine_disps, fine_disps_interp, fine_val, wta_depths, wta_depths_interp, wta_val, confidence = regularized_fine(lenses, fine_costs, disparities, args.penalty1, args.penalty2, args.max_cost, conf_sigma=args.conf_sigma)
        
     Dsgm = rtxrender.render_lens_imgs(lenses, fine_disps_interp)
@@ -275,20 +333,6 @@ def analyze_disp(lenses, est_depths, depth_discontinuities=False, max_ring=5):
             depth_smooth[key]['max'] = np.max(avgErrSmooth[key])
         
     return final_err, final_err_mask, final_err_mse, [badPix1, badPix2, badPixGraph], bumpiness, [depth_disc, depth_smooth, badPix1Disc, badPix2Disc, badPix1Smooth, badPix2Smooth, badPixGraphDisc, badPixGraphSmooth]
-
-def load_scene(filename):
-
-    basename, suffix = os.path.splitext(filename)
-
-    if suffix == '.json':
-          lenses = rtxIO.load_from_json(filename)
-          scene_type = 'synth'
-    elif suffix == '.xml':
-        img_filename = basename + '.png'
-        lenses = rtxIO.load_from_xml(img_filename, filename)
-        scene_type = 'real'
-
-    return lenses, scene_type
     
 def _rel_to_abs(lcoord, lenses, offsets):
 
@@ -833,7 +877,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
     
     for i, l in enumerate(fine_costs):
         
-        #pdb.set_trace()
+        pdb.set_trace()
         if i%1000==0:
             print("Processing lens {0}".format(i))
         lens = lenses[l]
@@ -841,6 +885,15 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         # prepare the cost shape: disparity axis is third axis (index [2] instead of [0])
         F = np.flipud(np.rot90(fine_costs[l].T))
 
+    
+        
+        
+        #mrf.pass_messages()
+
+
+        #display(mrf.calc_belief())
+        #pdb.set_trace()   
+        
         # the regularized cost volume
         sgm_cost = rtxsgm.sgm(lenses[l].img, F, lens.mask, penalty1, penalty2, False, max_cost)
         #pdb.set_trace()
@@ -849,7 +902,48 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         
         # interpolated minima and values
         fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
-
+        plt.subplot(234)
+        plt.imshow(fine_depths[l], cmap='jet') 
+        plt.subplot(235)
+        plt.imshow(fine_depths_interp[l], cmap='jet')         
+        plt.subplot(236)
+        plt.imshow(lens.disp_img, cmap='jet') 
+        np.set_printoptions(precision=3)
+        #numpy.set_printoptions(linewidth=135)s
+        plt.ion() 
+        plt.show()
+        print("Error sgm: {0}".format(np.mean(np.abs(lens.disp_img - fine_depths_interp[l]))))
+        pdb.set_trace()
+        num_beliefs = 16
+        F2 = F
+        Flbp = F2 / np.max(F2)
+        Flbp = 1 - Flbp
+        base_belief = Flbp  
+        smoothness = np.ndarray(shape=(num_beliefs,num_beliefs), dtype=np.float32)
+        for a in range(num_beliefs):
+            for b in range(num_beliefs):
+                smoothness[a][b] = howsmooth(a,b)  
+        mrf = LBP.MRF(Flbp.shape[0], Flbp.shape[1], num_beliefs) 
+        mrf.init_base_belief(base_belief)
+        mrf.init_smoothness(smoothness) 
+        
+            
+        plt.subplot(231)
+        plt.imshow(mrf.calc_belief(), cmap='jet') 
+        
+        print("Error base belief: {0}".format(np.mean(np.abs(lens.disp_img - mrf.calc_belief()))))
+        for i in range(10):
+            mrf.pass_messages()
+            plt.subplot(232)
+            plt.imshow(mrf.calc_belief(), cmap='jet') 
+            plt.subplot(233)
+            pdb.set_trace()
+            lbp = mrf.data[:,:,0,:]
+            mrf_interp, vals = rtxdisp.cost_minima_interp(lbp, disp)
+            plt.imshow(mrf_interp, cmap='jet')
+            print("Error base belief after {0}-th iteration: {1}".format(i, np.mean(np.abs(lens.disp_img - mrf_interp))))
+            pdb.set_trace()
+        
         if i%1000==0:
             print("max interp: {0}".format(np.amax(fine_depths_interp[l])))
         # confidence measure used in "Real-Time Visibility-Based Fusion of Depth Maps"
@@ -920,7 +1014,8 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
         
         if i % 100 == 0:
             progress_hook("Processing lens {0}/{1} - {2}".format(i, num_lenses, lcoord))
-            
+        
+  
         # calculate a first guess of the disparity based on the first circle
         fine, coarse, coarse_merged, lens_var = calc_costs_per_lens(lens, nb_lenses, disparities, max_cost, technique)
         nb_offsets, curr_disp_avg = nb_strategy(lens, lenses, coarse, disparities, max_cost=max_cost, nb_args=nb_args)
@@ -939,8 +1034,7 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
                 fine = fine_2
                 coarse = coarse_2
 
-        num_targets += len(fine)
-               
+        num_targets += len(fine)  
         coarse_costs_merged[lcoord]  =  rtxdisp.merge_costs_additive(coarse, max_cost)
         coarse_costs[lcoord] = coarse
         fine_costs[lcoord] = np.array(rtxdisp.merge_costs_additive(fine, max_cost))
