@@ -18,26 +18,8 @@ import os
 import json
 import pdb
 import cv2
-import disparity.LBP as LBP
 import matplotlib.pyplot as plt
 import matplotlib.image
-
-need_colourbar = False
-def display(whatever, pause=False, matrix=False):
-    plt.clf()
-    if matrix:
-        plt.matshow(whatever, fignum=0)
-    else:
-        plt.imshow(whatever)
-    plt.draw()
-    if pause: input()
-
-def smoothfunc(d):
-    d = abs(d)
-    return math.exp(-(d**2))
-def howsmooth(a,b,threshold=0.1):
-    if smoothfunc(a-b) > threshold: return smoothfunc(a-b)
-    else: return threshold
 
 def estimate_disp(args):
 
@@ -838,7 +820,6 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
     
     for i, l in enumerate(fine_costs):
         
-        pdb.set_trace()
         if i%1000==0:
             print("Processing lens {0}".format(i))
         lens = lenses[l]
@@ -846,65 +827,14 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         # prepare the cost shape: disparity axis is third axis (index [2] instead of [0])
         F = np.flipud(np.rot90(fine_costs[l].T))
 
-    
-        
-        
-        #mrf.pass_messages()
-
-
-        #display(mrf.calc_belief())
-        #pdb.set_trace()   
-        
         # the regularized cost volume
         sgm_cost = rtxsgm.sgm(lenses[l].img, F, lens.mask, penalty1, penalty2, False, max_cost)
-        #pdb.set_trace()
         # plain minima
         fine_depths[l] = np.argmin(sgm_cost, axis=2)
         
         # interpolated minima and values
         fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
-        plt.subplot(234)
-        plt.imshow(fine_depths[l], cmap='jet') 
-        plt.subplot(235)
-        plt.imshow(fine_depths_interp[l], cmap='jet')         
-        plt.subplot(236)
-        plt.imshow(lens.disp_img, cmap='jet') 
-        np.set_printoptions(precision=3)
-        #numpy.set_printoptions(linewidth=135)s
-        plt.ion() 
-        plt.show()
-        print("Error sgm: {0}".format(np.mean(np.abs(lens.disp_img - fine_depths_interp[l]))))
-        pdb.set_trace()
-        num_beliefs = 16
-        F2 = F
-        Flbp = F2 / np.max(F2)
-        Flbp = 1 - Flbp
-        base_belief = Flbp  
-        smoothness = np.ndarray(shape=(num_beliefs,num_beliefs), dtype=np.float32)
-        for a in range(num_beliefs):
-            for b in range(num_beliefs):
-                smoothness[a][b] = howsmooth(a,b)  
-        mrf = LBP.MRF(Flbp.shape[0], Flbp.shape[1], num_beliefs) 
-        mrf.init_base_belief(base_belief)
-        mrf.init_smoothness(smoothness) 
-        
-            
-        plt.subplot(231)
-        plt.imshow(mrf.calc_belief(), cmap='jet') 
-        
-        print("Error base belief: {0}".format(np.mean(np.abs(lens.disp_img - mrf.calc_belief()))))
-        for i in range(10):
-            mrf.pass_messages()
-            plt.subplot(232)
-            plt.imshow(mrf.calc_belief(), cmap='jet') 
-            plt.subplot(233)
-            pdb.set_trace()
-            lbp = mrf.data[:,:,0,:]
-            mrf_interp, vals = rtxdisp.cost_minima_interp(lbp, disp)
-            plt.imshow(mrf_interp, cmap='jet')
-            print("Error base belief after {0}-th iteration: {1}".format(i, np.mean(np.abs(lens.disp_img - mrf_interp))))
-            pdb.set_trace()
-        
+
         if i%1000==0:
             print("max interp: {0}".format(np.amax(fine_depths_interp[l])))
         # confidence measure used in "Real-Time Visibility-Based Fusion of Depth Maps"

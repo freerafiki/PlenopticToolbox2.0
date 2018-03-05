@@ -1,6 +1,6 @@
 
 import numpy as np
-import sgm_cost_path as scp
+import disparity.sgm_cost_path as scp
 # semi global matching
 import pdb
 
