@@ -13,7 +13,7 @@ And the following files:
 - setup.py: used for the cython compilation of the sgm file
 - plenopticGUI.py: a basic graphical user interface to load images and estimate disparity. It is still a beta version for testing, it probably has some bugs
 
-#### Dependencies and requirements
+## Dependencies and requirements
 In order to work with the python library, you need:
 - version of python 3 or higher (using python3.6)
 - a C++ compiler and Cython (version 3 or higher is preferable)
@@ -24,7 +24,7 @@ In order to work with the python library, you need:
 - header files (python3-dev)
 - opencv for python (python3-opencv)
 
-##### Cython
+### Cython
 
 Once you have installed dependencies, you have to run the setup file `setup.py` that will _cythonize_ the Cython files.
 Use the command
@@ -37,12 +37,12 @@ More detail about the cython compilation [here](http://cython.readthedocs.io/en/
 
 Depending on the OS (it was developed on Linux and tested on Linux and Mac), there may be some small issues due to compatibility of some libraries. If you encounter any problem, please send some feedback, it would be useful for correcting.
 
-##### Known issues:
+#### Known issues:
 fatal error: 'numpy/arrayobject.h' file not found - Mac OS X 10.10.5 Yosemite, python3.6
 
 workaround found it [here](https://github.com/andersbll/cudarray/issues/52) worked in this case, other possible solutions [here](https://github.com/andersbll/cudarray/issues/25) and [here](https://github.com/hmmlearn/hmmlearn/issues/43)
 
-##### PYTHONPATH
+#### PYTHONPATH
 
 Moreover, the structure of the python code requires that you set the environmental variable of your computer 
 `PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python`
@@ -65,7 +65,7 @@ In the file it should be added the line
 export PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python
 ```
 
-##### TEST
+### TEST
 
 To prove that the environmental variable is set, a simple test can be done using the command `printenv` from terminal, that will print the content of all environmental variables.
 
