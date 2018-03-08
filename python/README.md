@@ -35,6 +35,12 @@ It should create one or two files (.so) in the python folder, and they have to b
 
 More detail about the cython compilation [here](http://cython.readthedocs.io/en/latest/src/reference/compilation.html#compiling-with-distutils)
 
+Depending on the OS (it was developed on Linux and tested on Linux and Mac), there may be some small issues due to compatibility of some libraries. If you encounter any problem, please send some feedback, it would be useful for correcting.
+
+###### Known issues:
+fatal error: 'numpy/arrayobject.h' file not found - Mac OS X 10.10.5 Yosemite, python3.6
+workaround found it [here](https://github.com/andersbll/cudarray/issues/52) worked in this case, other possible solutions [here](https://github.com/andersbll/cudarray/issues/25) and [here](https://github.com/hmmlearn/hmmlearn/issues/43)
+
 ##### PYTHONPATH
 
 Moreover, the structure of the python code requires that you set the environmental variable of your computer 
