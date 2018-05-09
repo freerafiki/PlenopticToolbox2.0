@@ -2,5 +2,6 @@
 
 Few images of the dataset..
 
-![dragon](PlenopticToolbox2.0/THUMBNAILS/Dragon_DEPTH_small.png)
-![dragon](PlenopticToolbox2.0/THUMBNAILS/Dragon_small.png)
+Sample Image               |  Depth Image
+:-------------------------:|:-------------------------:
+![Dragon](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant_small.png)  |  ![Plant](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/Plant_small.png)
