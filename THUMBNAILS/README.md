@@ -2,6 +2,5 @@
 
 Few images of the dataset..
 
-[dragon](PlenopticToolbox2.0/THUMBNAILS/Dragon_DEPTH_small.png)
-
-[dragon](PlenopticToolbox2.0/THUMBNAILS/Dragon_small.png)
+![dragon](PlenopticToolbox2.0/THUMBNAILS/Dragon_DEPTH_small.png)
+![dragon](PlenopticToolbox2.0/THUMBNAILS/Dragon_small.png)
