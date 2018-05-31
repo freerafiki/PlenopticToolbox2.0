@@ -8,7 +8,10 @@ The Plenoptic Toolbox 2.0 aims to help promote research using Focused Plenoptic 
 providing a dataset of real and synthetic images.
 
 # Related Publications
-Luca Palmieri, Ron Op Het Veld and Reinhard Koch, _The Plenoptic 2.0 Toolbox: Benchmarking of depth estimation methods for MLA-based focused plenoptic cameras_, IEEE International Conference on Image Processing (ICIP), 2018. (accepted, to appear)
+- [Luca Palmieri, Ron Op Het Veld and Reinhard Koch, _The Plenoptic 2.0 Toolbox: Benchmarking of depth estimation methods for MLA-based focused plenoptic cameras_, ICIP, 2018. (accepted, to appear - preprint version)()
+- [_Fleischmann O. and Koch R, Lens-Based Depth Estimation for Multi-focus Plenoptic Cameras, GCPR, 2014_](https://link.springer.com/content/pdf/10.1007/978-3-319-11752-2_33.pdf)
+- [_Palmieri L. and Koch R, Optimizing the Lens Selection Process for Multi-Focus Plenoptic Cameras and Numerical Evaluation, LF4CV @ CVPR, 2017_](http://openaccess.thecvf.com/content_cvpr_2017_workshops/w27/papers/Palmieri_Optimizing_the_Lens_CVPR_2017_paper.pdf)
+
 
 
 ## Code
