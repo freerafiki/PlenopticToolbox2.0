@@ -44,8 +44,7 @@ Another dataset where same scene is captured with commercial version of 1.0 (Lyt
 
 [Link to the dataset](https://figshare.com/articles/The_Plenoptic_Dataset/6115487)
 
-- Waqas Ahmad, Luca Palmieri, Reinhard Koch and Mårten Sjöström, _Matching Light Field Datasets from Plenoptic Cameras 1.0 and 2.0_
-3DTV, 2018. (accepted, to appear)
+- [Waqas Ahmad, Luca Palmieri, Reinhard Koch and Mårten Sjöström, _Matching Light Field Datasets from Plenoptic Cameras 1.0 and 2.0_, 3DTV, 2018] (https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/Publications/MatchingLightFieldDataset.pdf)
 
 
 ### Plenoptic Simulator - Collaboration with Tim Michels and Arne Petersen from Kiel University
