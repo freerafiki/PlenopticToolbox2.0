@@ -36,7 +36,7 @@ The Dataset containing the images (for reasons of space cannot be provided here)
 The Google Drive folder contains real images taken with Raytrix Cameras (R29 and R42) and Synthetic Images (generated with Blender) along with the corresponding calibration or configuration file needed to work on the images.
 
 Please if you use the work presented here cite the source
-- [Luca Palmieri, Ron Op Het Veld and Reinhard Koch, _The Plenoptic 2.0 Toolbox: Benchmarking of depth estimation methods for MLA-based focused plenoptic cameras_](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/Publications/PreprintICIP2018.pdf)
+- [Luca Palmieri, Ron Op Het Veld and Reinhard Koch, _The Plenoptic 2.0 Toolbox: Benchmarking of depth estimation methods for MLA-based focused plenoptic cameras_, ICIP, 2018](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/Publications/PreprintICIP2018.pdf)
 
 
 ### Matching Plenoptic 1.0 and 2.0 Images - Collaboration with Waqas Ahmad from MidSweden University
@@ -44,7 +44,7 @@ Another dataset where same scene is captured with commercial version of 1.0 (Lyt
 
 [Link to the dataset](https://figshare.com/articles/The_Plenoptic_Dataset/6115487)
 
-- [Waqas Ahmad, Luca Palmieri, Reinhard Koch and Mårten Sjöström, _Matching Light Field Datasets from Plenoptic Cameras 1.0 and 2.0_, 3DTV, 2018] (http://www.diva-portal.org/smash/record.jsf?pid=diva2%3A1217604&dswid=4949)
+- [Waqas Ahmad, Luca Palmieri, Reinhard Koch and Mårten Sjöström, _Matching Light Field Datasets from Plenoptic Cameras 1.0 and 2.0_, 3DTV, 2018](http://www.diva-portal.org/smash/record.jsf?pid=diva2%3A1217604&dswid=4949)
 
 
 ### Plenoptic Simulator - Collaboration with Tim Michels and Arne Petersen from Kiel University
