@@ -52,7 +52,7 @@ Physically based Blender Plug-in to simulate plenoptic 1.0 and 2.0 capturing pro
 
 [Github repository](https://github.com/Arne-Petersen/Plenoptic-Simulation)
 
-- [ Tim Michels, Arne Petersen, Luca Palmieri, Reinhard Koch, _Simulation of Plenoptic Cameras_, 3DTV, 2018. (accepted, to appear - preprint version) ](http://data.mip.informatik.uni-kiel.de:555/wwwadmin/Publica/2018/2018_Michels_Simulation%20of%20Plenoptic%20Cameras.pdf)
+- [ Tim Michels, Arne Petersen, Luca Palmieri, Reinhard Koch, _Simulation of Plenoptic Cameras_, 3DTV, 2018.](http://data.mip.informatik.uni-kiel.de:555/wwwadmin/Publica/2018/2018_Michels_Simulation%20of%20Plenoptic%20Cameras.pdf)
 
 
 
