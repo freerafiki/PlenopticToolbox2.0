@@ -69,4 +69,14 @@ export PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python
 
 To prove that the environmental variable is set, a simple test can be done using the command `printenv` from terminal, that will print the content of all environmental variables.
 
+
+### RUNNING A SCRIPT
+
+In order to correctly run a script, you need to have downloaded at least one image (not from github as they don't fit here for reason of space, but from the google drive folder or the figshare dataset) and its corresponding configuration file (it ends in .xml)
+
+Once you have both, the script can be run using the corresponding command. For ease of use, the script assumes that the name of the configuration file and the image are the same. The easiest way to do this is just renaming the configuration file (it is the same for many pictures) as the image. 
+For example, if you want to use _Dragon_Processed.png_ image, change .xml file to _Dragon_Processed.xml_. You are also free to modify the code (in the folder plenopticIo the file [imgIO.py](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/plenopticIO/imgIO.py) is taking care of this, at the lines 149 and 163 there are two methods that are using the filename, if you edit there putting the name you wish, this can be easily changed).
+
+For more example about scripts, go to the [samples page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples).
+
 For further information, write to lpa@informatik.uni-kiel.de
