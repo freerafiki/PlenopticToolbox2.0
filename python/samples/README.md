@@ -35,9 +35,17 @@ For a further insight about the disparity estimation process, please refer to th
 
 #### Create a refocused image (refocused_img.py)
 
+There are different ways of obtaining high-quality refocused images. One is for example selecting a patch of pixel from each micro-image and tiling them together (as explained in 2010 Georgiev paper _Reducing Plenoptic Artifacts_)
+A simple version of this idea is here implemented to otbain a so-called all-in-focus (or TotalFocus if you are familiar with Raytrix software) image.
+
 Input Image                |  Refocused Image          | Input Image               |  Refocused Image
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
 ![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/dragon76_ref_img.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant_small.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Plant76_ref_img.png)
 
+NB: This is a "beta" version, and it contains several parameters to be tuned. Please look at the script code for a deeper explanation
 
+Example run:
 
+`python3 refocused_img.py /data1/palmieri/2018/TestResults/Plant/img.png -disp /data1/palmieri/2018/TestResults/Plant/sgm_real_lut_0.7674755859379999_18.767475585938_sad.png -cfg /data1/palmieri/2018/TestResults/config.xml -ps 7 -lvl 6 -o /data1/palmieri/2018/October/testplenoptic/ -name Plant76 -plus True`
+
+Where `-disp` is the path to the disparity image, `-cfg` to the .xml file, `-ps` the maximum patch size, `-lvl` the quantization levels, `-name` the preferred output name and `-plus` enable saving the quantization map for debug
