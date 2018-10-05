@@ -46,6 +46,6 @@ NB: This is a "beta" version, and it contains several parameters to be tuned. Pl
 
 Example run:
 
-`python3 refocused_img.py /data1/palmieri/2018/TestResults/Plant/img.png -disp /data1/palmieri/2018/TestResults/Plant/sgm_real_lut_0.7674755859379999_18.767475585938_sad.png -cfg /data1/palmieri/2018/TestResults/config.xml -ps 7 -lvl 6 -o /data1/palmieri/2018/October/testplenoptic/ -name Plant76 -plus True`
+`python3 refocused_img.py ~/img.png -disp ~/path_disp_img.png -cfg ~/config.xml -ps 7 -lvl 6 -o ~/output_folder/ -name outputName -plus True`
 
 Where `-disp` is the path to the disparity image, `-cfg` to the .xml file, `-ps` the maximum patch size, `-lvl` the quantization levels, `-name` the preferred output name and `-plus` enable saving the quantization map for debug
