@@ -4,11 +4,11 @@ The samples given here are intended to give some hints about how to use the avai
 
 Up to now four scripts are provided, more can be added in case of request (just write me at lpa@informatik.uni-kiel.de)
 
-#### Read the image (read_image.py)
+### Read the image (read_image.py)
 
 Super simple file to test that everything is working. It just reads a file (real or synthetic) by giving as input the path to the configuration file (the .xml, (name of image and configuration file should be the same!) or the .json) and shows the image.
 
-#### Read the image and change between micro-images and subaperture images (subapertureimages.py).
+### Read the image and change between micro-images and subaperture images (subapertureimages.py).
 
 Input Image                |  Subaperture Views
 :-------------------------:|:-------------------------:
@@ -17,11 +17,11 @@ Input Image                |  Subaperture Views
 Since many people are used to the Lytro (Plenoptic 1.0 Cameras) this script allows you to exchange the way the data is shown. Plenoptic 2.0 Cameras have different physical properties, thus the subaperture views are quite small and low-quality. The script is mostly thought as an example of what you would get treating these kind of images as if they were Lytro images.
 The images shown here are downscaled for visualization purposes.
 
-#### Change the format of the synthetic images (from_synth_to_xml.py)
+### Change the format of the synthetic images (from_synth_to_xml.py)
 
 It reads all micro-images contained in the given folder (where the scene.json file is) and save the image as .png file with his relative .xml configuration file, so that it looks like a real image and can be easier accessed.
 
-#### Estimate the disparity (disparity_sample.py)
+### Estimate the disparity (disparity_sample.py)
 
 Input Image                |  Disparity Map
 :-------------------------:|:-------------------------:
@@ -40,7 +40,7 @@ Example run:
 where `~/path_to_file.xml` is the path to the .xml file **(NB: the script now assumes that image and configuration file have same name, just different extensions, so image should be `~/path_to_file.png`)**, `-dmin` and `-dmax` are respectively the minimum and maximum disparity, `-err True` enables the error analysis (it will work only if a ground truth is available, so only for synthetic images and `-scene 'synth'` describe scene type (`'synth'` = synthetic or `'real'` = real).
 
 
-#### Create a refocused image (refocused_img.py)
+### Create a refocused image (refocused_img.py)
 
 There are different ways of obtaining high-quality refocused images. One is for example selecting a patch of pixel from each micro-image and tiling them together (as explained in 2010 Georgiev paper _Reducing Plenoptic Artifacts_)
 A simple version of this idea is here implemented to otbain a so-called all-in-focus (or TotalFocus if you are familiar with Raytrix software) image.
