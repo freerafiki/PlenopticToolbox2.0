@@ -1,7 +1,7 @@
 Title: PlenopticToolbox2.0  
 Author: Luca Palmieri  
 Address: lpa@informatik.uni-kiel.de  
-Date:	Februar 2018
+Last Update: October 2018
 
 # Plenoptic Toolbox 2.0
 The Plenoptic Toolbox 2.0 aims to help promote research using Focused Plenoptic Cameras (a.k.a. Plenoptic 2.0), 
