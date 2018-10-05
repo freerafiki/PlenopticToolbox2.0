@@ -24,6 +24,8 @@ if __name__ == "__main__":
     parser.add_argument('-dmin', dest='min_disp', default='1')
     parser.add_argument('-dmax', dest='max_disp', default='9')
     parser.add_argument('-nd', dest='num_disp', default='16')
+    parser.add_argument('-scene', dest='scene_type', default='real')
+    parser.add_argument('-err', dest='error', default=False)
     
     args = parser.parse_args()
 
@@ -38,13 +40,19 @@ if __name__ == "__main__":
     params.min_disp = args.min_disp
     params.max_disp = args.max_disp
     params.num_disp = args.num_disp
-
+    params.scene_type = args.scene_type
+    params.analyze_err = args.error
+    
+    full_name, nothing = params.filename.split('.xml')
+    separate_names = full_name.split('/')
+    pic_name = separate_names[len(separate_names)-1]
+    
     I, disp, Dwta, Dgt, Dconf, Dcoarse, disparities, ncomp, disp_avg, new_offset, error_measurements = rtxmain.estimate_disp(params)
 
-    disp_name = "{0}/disp_{1}_{2}_{3}_{4}.png".format(args.output_path, params.method, disparities[0], disparities[-1], params.technique) 
-    disp_name_col = "{0}/disp_col_{1}_{2}_{3}_{4}.png".format(args.output_path, params.method, disparities[0], disparities[-1], params.technique) 
-    gt_name = "{0}/gt_{1}_{2}_{3}_{4}.png".format(args.output_path, params.method, disparities[0], disparities[-1], params.technique) 
-    gt_name_col = "{0}/gt_col_{1}_{2}_{3}_{4}.png".format(args.output_path, params.method, disparities[0], disparities[-1], params.technique) 
+    disp_name = "{0}/{1}_disp_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
+    disp_name_col = "{0}/{1}_disp_col_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
+    gt_name = "{0}/{1}_gt_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
+    gt_name_col = "{0}/{1}_gt_col_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
 
     plt.subplot(121)
     plt.title("Input Image")
@@ -55,8 +63,8 @@ if __name__ == "__main__":
     plt.show()
     
     if Dgt is not None:
-        plt.imsave(gt_name, Dgt, vmin=disparities[0], vmax=disparities[-1], cmap='gray')
-        plt.imsave(gt_name_col, Dgt, vmin=disparities[0], vmax=disparities[-1], cmap='jet')
+        plt.imsave(gt_name, Dgt, vmin=np.min(Dgt), vmax=np.max(Dgt), cmap='gray')
+        plt.imsave(gt_name_col, Dgt, vmin=np.min(Dgt), vmax=np.max(Dgt), cmap='jet')
 
     if error_measurements is not None:
         #save in a file the errors
@@ -81,9 +89,9 @@ if __name__ == "__main__":
         error_analysis['err_thr_smooth'] = plottingsmth.tolist()
         error_analysis['disc_err'] = depth_disc
         error_analysis['smooth_err'] = depth_smooth     
-        err_ana_name = "{0}/error_analysis_{1}_{2}_{3}.json".format(args.output_path, disparities[0], disparities[-1], params.technique) 
-        err_ana_csv = "{0}/error_analysis_{1}_{2}_{3}.csv".format(args.output_path, disparities[0], disparities[-1], params.technique) 
-        err_arr_csv = "{0}/error_array_{1}_{2}_{3}.csv".format(args.output_path, disparities[0], disparities[-1], params.technique)      
+        err_ana_name = "{0}/{1}_error_analysis_{2}_{3}_{4}.json".format(args.output_path, pic_name, disparities[0], disparities[-1], params.technique) 
+        err_ana_csv = "{0}/{1}_error_analysis_{2}_{3}_{4}.csv".format(args.output_path, pic_name, disparities[0], disparities[-1], params.technique) 
+        err_arr_csv = "{0}/{1}_error_array_{2}_{3}_{4}.csv".format(args.output_path, pic_name, disparities[0], disparities[-1], params.technique)      
         imgIO.write_csv_file(error_analysis, err_ana_csv, params.technique)
         plotting_arrays = [plotting, plottingdisc, plottingsmth]
         imgIO.write_csv_array(plotting_arrays, err_arr_csv, params.technique)

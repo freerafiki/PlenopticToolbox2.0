@@ -146,20 +146,134 @@ def _hex_focal_type(c):
 
     return focal_type 
 
-def load_scene(filename):
+"""
+Decide which method should be used for loading the image
+----
+October 2018
+"""
+def load_scene(filename, calc_err):
 
     basename, suffix = os.path.splitext(filename)
-
-    if suffix == '.json':
-          lenses = load_from_json(filename)
-          scene_type = 'synth'
-    elif suffix == '.xml':
-        img_filename = basename + '.png'
-        lenses = load_from_xml(img_filename, filename)
-        scene_type = 'real'
-
-    return lenses, scene_type
     
+    if calc_err:
+        disp_name = basename + '_disp.png'
+        img_filename = basename + '.png'
+        lenses = load_with_disp(img_filename, disp_name, filename)
+    else:
+        if suffix == '.json':
+            lenses = load_from_json(filename)
+        elif suffix == '.xml':
+            img_filename = basename + '.png'
+            lenses = load_from_xml(img_filename, filename)
+
+    return lenses
+   
+   
+"""
+Load an image and its disparity map
+Assuming that if image is called picture.png its disparity is named picture_disp.png
+Useful to estimate the error then
+-----
+October 2018
+"""   
+def load_with_disp(img_filename, disp_name, config_filename):   
+
+    img = plt.imread(img_filename)
+    disp = plt.imread(disp_name)
+    calib = read_calibration(config_filename)
+    
+    if len(img.shape) < 3:
+        print("This version works only for colored image")
+        raise ValueError("Unsopported image dimension {0}".format(img.shape))    
+    elif len(img.shape) == 3:
+        weights = np.array([0.3, 0.59, 0.11])
+        data = np.sum([img[:, :, i] * weights[i] for i in range(3)], axis=0)
+        data_col = img
+    else:
+        raise ValueError("Unsupported image dimensions {0}".format(img.shape))
+        
+    # the image grid in pixels used for the bivariate spline interpolation
+    gridy, gridx = range(data.shape[0]), range(data.shape[1])
+
+    data_interp = sinterp.RectBivariateSpline(gridy, gridx, data)
+    data_interp_r = sinterp.RectBivariateSpline(gridy, gridx, data_col[:,:,0])
+    data_interp_g = sinterp.RectBivariateSpline(gridy, gridx, data_col[:,:,1])
+    data_interp_b = sinterp.RectBivariateSpline(gridy, gridx, data_col[:,:,2])
+    # we need to be using the gray version with the real values
+    if disp[:,:,0].all() == disp[:,:,1].all() == disp[:,:,2].all():
+        disp_data = disp[:,:,0]
+    else:
+	    print("Wrong disparity map. Probably trying to read the colored version of the disparity map. Please use the gray version")
+	    raise ValueError("Wrong disparity map")    
+    disp_interp = sinterp.RectBivariateSpline(gridy, gridx, disp_data)
+    img_shape = np.asarray(data.shape[0:2])
+    coords = rtxhexgrid.hex_lens_grid(img_shape, calib.lens_diameter, calib.rot_angle, calib.offset, calib.lbasis)
+    focal_type_offsets = [tuple(lens['offset'].values()) for lens in calib.lens_types]
+    focal_type_offsets = [(int(p[0]), int(p[1])) for p in focal_type_offsets]
+    focal_type_map = {_hex_focal_type(p) : i for i, p in enumerate(focal_type_offsets)}
+
+    lenses = dict()
+    local_grid = rtxlens.LocalLensGrid(calib.lens_diameter)
+    x, y = local_grid.x, local_grid.y
+    xx, yy = local_grid.xx, local_grid.yy
+    mask = np.zeros_like(local_grid.xx)
+    mask[xx**2 + yy**2 < calib.inner_lens_radius**2] = 1    
+
+    for lc in coords:
+
+        pc = coords[lc]
+        lens = rtxlens.Lens(lcenter=lc, pcenter=pc, diameter=calib.lens_diameter)
+        lens.focal_type = _hex_focal_type(lc)
+        lens.fstop = lens.diameter
+        lens.pixel_size = 1.0
+        lens.position = np.array([pc[1], pc[0], 0])
+        cen_x = round(pc[0])
+        cen_y = round(pc[1])
+        x1 = int(cen_x + round(np.min(x)))
+        x2 = int(cen_x + round(np.max(x)))
+        y1 = int(cen_y + round(np.min(y)))
+        y2 = int(cen_y + round(np.max(y)))
+        lens.num_channels=3
+        lens.img = data_interp(y + pc[0], x + pc[1])
+        lens.disp_img = disp_interp(y + pc[0], x + pc[1])
+        lens.img_interp = sinterp.RectBivariateSpline(y, x, lens.img)
+        # colored version of the interpolated image:
+        lens.img_interp3c[0] = data_interp_r
+        lens.img_interp3c[1] = data_interp_g
+        lens.img_interp3c[2] = data_interp_b
+        lens.col_img_uint = data_col[x1:x2+1, y1:y2+1] #np.zeros((lens.img.shape[0], lens.img.shape[1], lens.num_channels))
+
+        if lens.col_img_uint.dtype == 'uint8':
+            new_col_img = np.zeros((lens.col_img_uint.shape))
+            new_col_img = lens.col_img_uint / 255.0
+            lens.col_img = new_col_img
+        else:
+            lens.col_img = lens.col_img_uint
+
+        lens.mask = mask
+        lens.grid = local_grid
+        
+        # the lens area used for matching
+        lens.inner_radius = calib.inner_lens_radius
+
+        # minimum and maximum disparities for this lens
+        focal_type = focal_type_map[_hex_focal_type(lc)]
+        min_depth = calib.lens_types[focal_type]['depth_range']['min']
+        max_depth = calib.lens_types[focal_type]['depth_range']['max']
+
+        lens.min_disp = lens.diameter / max_depth
+        lens.max_disp = lens.diameter / min_depth
+        #pdb.set_trace()
+
+        lenses[tuple(lc)] = lens
+
+    return lenses
+
+"""
+Load an image from the .xml file
+-----
+February 2018
+"""  
 def load_from_xml(image_filename, config_filename):
 
     img = plt.imread(image_filename)
@@ -245,7 +359,12 @@ def load_from_xml(image_filename, config_filename):
         lenses[tuple(lc)] = lens
 
     return lenses    
-    
+
+"""
+Load a synthetic image (actually a lot of micro-iamges) from the respective .json file
+-----
+February 2018
+"""     
 def load_from_json(filename):
 
     """

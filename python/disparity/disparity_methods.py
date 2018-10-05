@@ -31,7 +31,9 @@ def estimate_disp(args):
     for i in rings: 
         nb_offsets.extend(rtxhexgrid.HEX_OFFSETS[i])
     
-    lenses, scene_type = rtxIO.load_scene(args.filename)
+    scene_type = args.scene_type
+    lenses = rtxIO.load_scene(args.filename, args.analyze_err)
+    
 
     diam = lenses[0, 0].diameter
     max_disp = float(args.max_disp) 
@@ -72,26 +74,27 @@ def estimate_disp(args):
     
     lens_data = dict()
     col_data = dict()
-    if scene_type == 'synth':
+    if args.analyze_err:
         gt_disp = dict()
         
     for lcoord in lenses:
         lens_data[lcoord] = lenses[lcoord].img
         col_data[lcoord] = lenses[lcoord].col_img
-        if scene_type == 'synth':
+        if args.analyze_err:
             gt_disp[lcoord] = lenses[lcoord].disp_img
         
     I = rtxrender.render_lens_imgs(lenses, lens_data)
     Dconf = rtxrender.render_lens_imgs(lenses, confidence)
     Icol = rtxrender.render_lens_imgs(lenses, col_data)
-    #pdb.set_trace()
     new_offset = [lenses[0,0].pcoord[0] - (Icol.shape[0]/2), lenses[0,0].pcoord[1] - (Icol.shape[1]/2)]
 
     Dcoarse = None
     if args.coarse is True:
         Dcoarse = rtxrender.render_lens_imgs(lenses, coarse_disp)
         
-    if scene_type == 'synth':
+    if args.analyze_err:
+        # if gt_disp is empty (if you are trying to evaluate error but didn't provide a valid disparity map)
+        # it will throw an error the rendering method (line 100)
         Dgt = rtxrender.render_lens_imgs(lenses, gt_disp)
         error_measurements = analyze_disp(lenses, fine_disps_interp, True)
     else:
@@ -124,15 +127,20 @@ def get_depth_discontinuities(lenses):
     """
     disc = dict()
     smooth = dict()
+    canny_thr_low = 100 # threshold for canny method
+    canny_thr_high = 200 # threshold for canny method
+    kernel_size = 3 # one pixel dilation in every direction (3x3 matrix)
+    iterations_dilate = 1 # one time dilation --> one pixel is enough
+    uint8_norm_value = 255 # just switching [0,1] to [0,255] and back
     for key in lenses:
         current_disp = lenses[key].disp_img
         norm_disp = current_disp / np.max(current_disp)
-        int_disp = np.uint8(norm_disp * 255)
-        canny = cv2.Canny(int_disp, 100, 200)
-        kernel = np.ones((3,3),np.uint8)
-        dilation = cv2.dilate(canny,kernel,iterations = 1)
-        disc[key] = dilation / 255
-        smooth[key] = (255 - dilation) / 255
+        int_disp = np.uint8(norm_disp * uint8_norm_value)
+        canny = cv2.Canny(int_disp, canny_thr_low, canny_thr_high)
+        kernel = np.ones((kernel_size,kernel_size),np.uint8)
+        dilation = cv2.dilate(canny,kernel,iterations = iterations_dilate)
+        disc[key] = dilation / uint8_norm_value
+        smooth[key] = (uint8_norm_value - dilation) / uint8_norm_value
     
     return disc, smooth
     
@@ -152,7 +160,7 @@ def analyze_disp(lenses, est_depths, depth_discontinuities=False, max_ring=5):
     err_mask = {0: np.array([]), 1: np.array([]), 2: np.array([])}
     err_mse = {0: np.array([]), 1: np.array([]), 2: np.array([])}
     bump = {0: np.array([]), 1: np.array([]), 2: np.array([])}
-    bump_thresh = 0.25
+    bump_thresh = 0.25 # bumpiness threshold - can be changed if disparity range varies 
     badPix1 = np.zeros((len(est_depths)))
     badPix2 = np.zeros((len(est_depths)))
     badPixGraph = np.zeros((len(est_depths), 21))
