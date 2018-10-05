@@ -171,7 +171,6 @@ def load_scene(filename, calc_err):
    
 """
 Load an image and its disparity map
-Assuming that if image is called picture.png its disparity is named picture_disp.png
 Useful to estimate the error then
 -----
 October 2018
