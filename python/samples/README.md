@@ -37,6 +37,7 @@ For a further insight about the disparity estimation process, please refer to th
 
 Input Image                |  Refocused Image          | Input Image               |  Refocused Image
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Disparity.jpg)
+![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/samples/dragon76_ref_img.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant_small.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/masterpython/samples/Plant76_ref_img.png)
+
 
 
