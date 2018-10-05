@@ -11,7 +11,7 @@ import numpy as np
 import scipy.interpolate as sinterp
 import matplotlib.pyplot as plt
 import plenopticIO.lens_grid as rtxhexgrid
-import rendering.render as rend
+import rendering.render as rtxrnd
 import microlens.lens as rtxlens
 from xml.etree import ElementTree
 import pdb
@@ -375,7 +375,7 @@ def load_from_json(filename):
 
     filename: string
               Filename of the scene configuration file (format: JSON)
-
+rtxrender
     Returns:
     --------
 
@@ -482,8 +482,8 @@ def save_xml(filename, lenses):
         disp_data[lcoord] = lenses[lcoord].disp_img
         
     # render the MLA image
-    img = rtxrender.render_lens_imgs(lenses, lens_data)
-    disp = rtxrender.render_lens_imgs(lenses, disp_data)
+    img = rtxrnd.render_lens_imgs(lenses, lens_data)
+    disp = rtxrnd.render_lens_imgs(lenses, disp_data)
 
     h, w = img.shape[0], img.shape[1]
     m = ((h-1)/2.0, (w-1) / 2.0)
