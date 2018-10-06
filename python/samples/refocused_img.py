@@ -17,7 +17,7 @@ v1 October 2018
 """
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Read an image and estimate disparity")
+    parser = argparse.ArgumentParser(description="Read an image and create a refocused version")
     parser.add_argument(dest='input_filename', nargs=1, help="Name of the lens config file")
     parser.add_argument('-disp', dest='disp_path', default='./')
     parser.add_argument('-cfg', dest='config_path', default='./')
