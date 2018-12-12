@@ -42,7 +42,7 @@ if __name__ == "__main__":
     parser.add_argument('-scene', dest='scene_type', default='real')
     # set to true to calculate error against ground truth (so you need to provide ground truth),
     # so only for synthetic scenes
-    parser.add_argument('-err', dest='error', default=False)
+    parser.add_argument('--err', default=False, action='store_true')
     # additional parameter, set to False if you don't want to save the confidence map
     parser.add_argument('-conf', dest='save_conf', default=True)
     ## THE CONFIDENCE
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     params.max_disp = args.max_disp
     params.num_disp = args.num_disp
     params.scene_type = args.scene_type
-    params.analyze_err = args.error
+    params.analyze_err = args.err
     params.confidence_technique = args.confidence_technique
     
     full_name, nothing = params.filename.split('.xml')
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     json_name = "{0}/{1}_parameters.json".format(args.output_path, pic_name)
     xml_name = "{0}/{1}_config.xml".format(args.output_path, pic_name)
 
-    #plt.subplot(121)
+    plt.subplot(121)
     #plt.title("Input Image")
     #plt.imshow(I)
     #plt.subplot(122)

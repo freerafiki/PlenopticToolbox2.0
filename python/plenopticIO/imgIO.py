@@ -154,8 +154,8 @@ October 2018
 def load_scene(filename, calc_err=False):
 
     basename, suffix = os.path.splitext(filename)
-    
-    if calc_err:
+
+    if calc_err is True:
         disp_name = basename + '_disp.png'
         img_filename = basename + '.png'
         lenses = load_with_disp(img_filename, disp_name, filename)
