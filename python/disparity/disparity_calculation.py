@@ -135,7 +135,7 @@ def lens_sweep(src_lens, dst_lenses, disparities, technique, hws=1, max_cost=10.
                 
                 diff = np.pow((dst_img - src_img), 2)
                 
-            elif technique == 'censusv3':
+            elif technique == 'census':
             
                 w, h = src_img.shape
 

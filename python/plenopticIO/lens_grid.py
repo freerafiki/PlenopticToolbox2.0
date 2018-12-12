@@ -137,7 +137,7 @@ def hex_lens_grid(img_shape, diam, angle, offset, B, filter_method='lens'):
     else:
         switch_xy = False
 
-    print("Basis: {0} switch {1}".format(B, switch_xy))
+    #print("Basis: {0} switch {1}".format(B, switch_xy))
     
     lens_centers = []
     h, w = img_shape

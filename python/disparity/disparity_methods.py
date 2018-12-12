@@ -32,9 +32,9 @@ def estimate_disp(args):
         nb_offsets.extend(rtxhexgrid.HEX_OFFSETS[i])
     
     scene_type = args.scene_type
+    print("******************\nLoading the scene..\n")
     lenses = rtxIO.load_scene(args.filename, args.analyze_err)
     
-
     diam = lenses[0, 0].diameter
     max_disp = float(args.max_disp) 
     min_disp = float(args.min_disp) 
@@ -61,13 +61,15 @@ def estimate_disp(args):
         
     if selection_strategy is not None:
         print("Selection strategy: {0}".format(selection_strategy))
+        print("\nStep 1) Calculating the costs..\n")
         fine_costs, coarse_costs, coarse_costs_merged, lens_variance, num_comparisons, disp_avg = calc_costs_selective_with_lut(lenses, disparities, selection_strategy, args.technique, nb_args=strategy_args, refine=args.refine, max_cost=args.max_cost)
 
     if args.coarse is True:
         coarse_disp = regularize_coarse(lenses, coarse_costs_merged, disparities, penalty1=args.coarse_penalty1, penalty2=args.coarse_penalty2)
         fine_costs = augment_costs_coarse(fine_costs, coarse_disp, lens_variance, disparities, coarse_weight=args.coarse_weight, struct_var=args.struct_var)
     
-    fine_disps, fine_disps_interp, fine_val, wta_depths, wta_depths_interp, wta_val, confidence = regularized_fine(lenses, fine_costs, disparities, args.penalty1, args.penalty2, args.max_cost, conf_sigma=args.conf_sigma)
+    print("\nStep 2) Regularizing and extracing disparity map..\n")
+    fine_disps, fine_disps_interp, fine_val, wta_depths, wta_depths_interp, wta_val, confidence = regularized_fine(lenses, fine_costs, disparities, args.penalty1, args.penalty2, args.max_cost, conf_tec=args.confidence_technique, conf_sigma=args.conf_sigma)
        
     Dsgm = rtxrender.render_lens_imgs(lenses, fine_disps_interp)
     Dwta = rtxrender.render_lens_imgs(lenses, wta_depths_interp)
@@ -107,7 +109,7 @@ def estimate_disp(args):
         img_s = None
         error_measurements = None
 
-    return Icol, Dsgm, Dwta, Dgt, Dconf, Dcoarse, disparities, num_comparisons, disp_avg, new_offset, error_measurements
+    return Icol, Dsgm, Dwta, Dgt, Dconf, Dcoarse, disparities, num_comparisons, disp_avg, new_offset, error_measurements, lenses[0,0]
 
 def _has_neighbours(lens, lenses, neighbours):
         
@@ -815,7 +817,7 @@ def calc_costs_plain(lenses, disparities, nb_offsets, max_cost, progress_hook=pr
         rtxdisp.assign_last_valid(fine_costs[lcoord])
     return fine_costs, coarse_costs, coarse_costs_merged, lens_variance, num_comparisons
 
-def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, conf_sigma=0.3, min_thresh=2.0, eps=0.0000001):
+def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, conf_tec='mlm', conf_sigma=0.3, min_thresh=2.0, eps=0.0000001):
 
     fine_depths = dict()
     fine_depths_interp = dict()
@@ -823,13 +825,13 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
     wta_depths = dict()
     wta_depths_interp = dict()
     wta_depths_val = dict()
-
+    num_lenses = len(lenses)
     confidence = dict()
     
     for i, l in enumerate(fine_costs):
         
         if i%1000==0:
-            print("Processing lens {0}".format(i))
+            print("Regularization: Processing lens {0}/{1}".format(i, num_lenses))
         lens = lenses[l]
         
         # prepare the cost shape: disparity axis is third axis (index [2] instead of [0])
@@ -837,19 +839,15 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
 
         # the regularized cost volume
         sgm_cost = rtxsgm.sgm(lenses[l].img, F, lens.mask, penalty1, penalty2, False, max_cost)
+        
         # plain minima
         fine_depths[l] = np.argmin(sgm_cost, axis=2)
         
         # interpolated minima and values
         fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
 
-        if i%1000==0:
-            print("max interp: {0}".format(np.amax(fine_depths_interp[l])))
-        # confidence measure used in "Real-Time Visibility-Based Fusion of Depth Maps"
-        # substract 1 at the end since the "real" optimium is included in the vectorized operations
-        
-       
-        #confidence[l][fine_depths_val[l] > min_thresh] = 0.0
+        #if i%1000==0:
+        #    print("max interp: {0}".format(np.amax(fine_depths_interp[l])))
 
         # plain winner takes all minima
         wta_depths[l] = np.argmin(F, axis=2)
@@ -857,16 +855,39 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         # interpolated minima and values from the unregularized cost volume
         wta_depths_interp[l], wta_depths_val[l] = rtxdisp.cost_minima_interp(F, disp)
 
-        confidence[l] = np.sum(np.exp(-((sgm_cost - fine_depths_val[l][:, :, None])**2) / conf_sigma), axis=2) - 1
+        ### CALCULATE THE CONFIDENCE USING A METHOD
+        minimum_costs = np.min(sgm_cost, axis=2)
 
-        #TODO: calculate wta confidence, scale the sigma accordingly
-        #confidence[l] = np.sum(np.exp(-((F - wta_depths_val[l][:, :, None])**2) / conf_sigma), axis=2) - 1
-        
-        # avoid overflow in division
-        ind = confidence[l] > eps
-        confidence[l][confidence[l] <= 0] = 0.0
-        confidence[l][ind] = 1.0 / confidence[l][ind]
-        
+        if conf_tec == 'oev':
+            # TODO max does not work on arrays
+            num_denom = 0
+            dmax = np.max(sgm_cost)
+            dmin = np.min(sgm_cost)
+            denom_denom = max(sgm_cost - minimum_costs[:,:,None], 1)
+            for n in range(0, sgm_cost.shape[2]):
+                index_map = np.ones((sgm_cost.shape[0], sgm_cost.shape[1])) * n
+                tmp_num = np.pow(max(min(index_map - fine_depths[l], (dmax - dmin)/3), 0), 2)
+                num_denom += tmp_num / denom_denom[:,:,n]
+            confidence[l] = 1 / num_denom
+        elif conf_tec == 'rtvbf':
+            confidence[l] = np.sum(np.exp(-((sgm_cost - fine_depths_val[l][:, :, None])**2) / conf_sigma), axis=2) - 1
+            # confidence measure used in "Real-Time Visibility-Based Fusion of Depth Maps"
+            # substract 1 at the end since the "real" optimium is included in the vectorized operations
+
+            # confidence[l][fine_depths_val[l] > min_thresh] = 0.0
+            #TODO: calculate wta confidence, scale the sigma accordingly
+            #confidence[l] = np.sum(np.exp(-((F - wta_depths_val[l][:, :, None])**2) / conf_sigma), axis=2) - 1
+            
+            # avoid overflow in division
+            ind = confidence[l] > eps
+            confidence[l][confidence[l] <= 0] = 0.0
+            confidence[l][ind] = 1.0 / confidence[l][ind]
+        else: 
+            #conf_tec == 'mlm':
+            exp_cost = np.exp(-minimum_costs/(2*np.power(conf_sigma,2)))
+            denom_cost = np.sum(np.exp(-sgm_cost/(2*np.power(conf_sigma,2))), axis=2)
+            confidence[l] = exp_cost / denom_cost
+
     return fine_depths, fine_depths_interp, fine_depths_val, wta_depths, wta_depths_interp, wta_depths_val, confidence
     
 def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, nb_args, max_cost, refine=True, progress_hook=print):
@@ -896,7 +917,7 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
     for i, lcoord in enumerate(lenses):
         
         lens = lenses[lcoord]
-     
+        
         # some lenses have troubles, mainly the 0-type lenses, when they are far away
         # using this solution seems better   
         if rtxhexgrid.hex_focal_type(lcoord)==0:
@@ -912,7 +933,7 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
        
         
         if i % 100 == 0:
-            progress_hook("Processing lens {0}/{1} - {2}".format(i, num_lenses, lcoord))
+            progress_hook("Building Cost Volume: processing lens {0}/{1}".format(i, num_lenses))
         
   
         # calculate a first guess of the disparity based on the first circle
