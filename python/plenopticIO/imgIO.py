@@ -151,7 +151,7 @@ Decide which method should be used for loading the image
 ----
 October 2018
 """
-def load_scene(filename, calc_err):
+def load_scene(filename, calc_err=False):
 
     basename, suffix = os.path.splitext(filename)
     
