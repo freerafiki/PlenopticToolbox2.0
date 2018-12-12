@@ -6,7 +6,7 @@ import sys
 path = sys.argv[1]
 
 # read the image and store it into a dictionary with all informations
-lenses, scene_type = imgIO.load_scene(path)
+lenses = imgIO.load_scene(path)
 
 # create another dictionary with only colored image (no other informations stored)
 lens_imgs = dict()
