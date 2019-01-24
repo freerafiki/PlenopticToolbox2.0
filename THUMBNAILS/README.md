@@ -2,7 +2,7 @@
 
 Few images of the dataset..
 
-NB: This are THUMBNAILS, not the actual high-resolution images! Please do not use this for image processing. Thanks
+NB: This are THUMBNAILS, not the actual high-resolution images! Please do not use these for image processing. Thanks
 
 ## Real Images..
 Plant Image                |  Plant Depth              | Dragon Image              | Dragon Depth              |
