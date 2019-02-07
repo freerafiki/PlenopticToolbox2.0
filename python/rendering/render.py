@@ -248,57 +248,78 @@ def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
 
 """
-Constraints contains some conditions for a window around a pixel to be considered good enough for the filling
-In the case in which there are not such condition, we can relax this constraints in order to allow a dense
-filling (or leave the disparity with holes)
-
-The constraints are:
-- min_ratio_to_fill_a_pixel = minimum number of pixels that have disparity value within a window 
-                              (calculated in percentage over the number of pixel in the window)
-- diff_color_similarity     = difference between pixels to be considerated similarly colored
-                              (calculated over the range, so 0.5 usint int [0,255] would be 128)
-- min_ratio_of_similar_colored_disp_values = minimum number of pixels with similar color within the window
-                              (calculated in percentage over the number of pixel in the window) 
-"""
-def relax_constraints(constraints):
-
-    # TODO think about a better way, come on
-    constraints[0] = 0.51 # half of the window with values: is this asking too much?
-    constraints[1] = 0.5 # half of the color range, it's a lot!
-    constraints[2] = 0.01 # one percent of the window (so typically one pixel is enough)
-    return constraints
+It creates a traditional image extracting patch from the lenslet image
+Resolution is set to 1/4, still need to be updated to be changeable
+Patch size is chosen automatically from disparity image
+Using x_shift and y_shift is possible to obtain perspective shifts, i.e. different viewpoints
+--------------
+February 2019
 
 """
-The idea is to check how many points will be accepted with the mean, and adjust the threshold
-to accept more or less 75% of the points
-"""
-def select_automatic_threshold(confidence_map):
+def generate_a_perspective_view(lenses, col_data, disp_data, min_disp, max_disp, x_shift=0, y_shift=0, isReal=True, imgname=None):
+   
+    if disp_data is None:
+        # refocusing!
+        # not ready yet
+        return None
+    
+    # we set the patch image to be one fourth of the original, if not otherwise specified
+    factor = 4 # if changing this the final resolution will change
+    central_lens = lenses[0,0]
+    img_shape = ((central_lens.pcoord) * 2 + 1).astype(int)
+    cen = round(central_lens.img.shape[0]/2.0)
+    if len(col_data[0,0].shape) > 1:
+        hl, wl, c = col_data[0,0].shape
+    else:
+        hl, wl = central_lens.img.shape
+        c = 1
+    max_ps = np.floor(central_lens.diameter / 2)
+    n = (hl - 1) / 2.0
+    x = np.linspace(-n, n, hl)
+    XX, YY = np.meshgrid(x, x)
+    ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c)) 
+    disp_ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    if c == 4:
+        ref_img[:,:,3] = 1 # alpha channel
+    count = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    psimg = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    actual_size = round(hl / factor)
+    if actual_size % 2 == 0:
+        actual_size += 1
+    dim = (actual_size, actual_size)
+    hw = int(np.floor(actual_size/2))
+    for key in lenses:
+        
+        #pdb.set_trace()
+        lens = lenses[key]
+        current_img = np.asarray(col_data[key])
+        current_disp = np.asarray(disp_data[key])
+        ps = get_patch_size_absolute(current_disp, lens.diameter, isReal)
+        cen_y, cen_x = int(round(lens.pcoord[0])), int(round(lens.pcoord[1]))
+        ptc_y, ptc_x = int(cen_y / factor), int(cen_x / factor)
+        if min(ptc_y, ptc_x) > max_ps and ptc_y < (ref_img.shape[0]-max_ps) and ptc_x < (ref_img.shape[1]-max_ps):       
+            color_img = current_img[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift] # patch size!
+            disp_simg = current_disp[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift]
+            #pdb.set_trace()
+            #print("size of color_img {0}".format(color_img.shape))
+            #test_img = current_img[cen-ps:cen+ps+1, cen-ps:cen+ps+1]
+            #print("size without shift {0}".format(test_img.shape))
+            img_big = cv2.resize(color_img, dim, interpolation = cv2.INTER_LINEAR)
+            disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR) 
+            count[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += 1
+            psimg[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] = ps #color_img.shape[0] * color_img.shape[1]
+            ref_img[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1, 0:3] += img_big[:,:,0:3]
+            disp_ref_img[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += disp_big
+    
+    ref_img_fnl = np.ones_like(ref_img)
+    disp_ref_img_fnl = np.ones_like(disp_ref_img)
+    count[(count == 0)] = 1
 
-    cut_value = np.mean(confidence_map) + np.std(confidence_map)
+    for j in range(0,3):
+        ref_img_fnl[:,:,j] = ref_img[:,:,j] / count 
+    disp_ref_img_fnl = disp_ref_img / count   
 
-    total = np.sum(confidence_map > 0)
-    accepted = np.sum(confidence_map > cut_value)
-    ratio = accepted / total
-    step = (np.max(confidence_map) - np.min(confidence_map)) / 10
-    num_iteration = 0
-    converged = False
-    while ratio > 0.80 or ratio < 0.70 and not converged:
-        if ratio > 0.80:
-            cut_value = cut_value + step
-        elif ratio < 0.70:
-            cut_value = cut_value - step
-        num_iteration += 1
-        accepted = np.sum(confidence_map > cut_value)
-        ratio = accepted / total
-        if ratio > 0.70 and ratio < 0.80:
-            converged = True
-        if num_iteration > 5 and not converged:
-            step = step / 5
-        # manually break if it didn't work
-        if num_iteration > 15:
-            print("automatic method for thresholding did not work: selecting manually threhsold = 0.5")
-            converged = True
-            cut_value = 0.5
-            break
-
-    return cut_value
+    ref_img_fnl[np.isnan(ref_img_fnl)] = 0
+    disp_ref_img_fnl[np.isnan(disp_ref_img_fnl)] = 0   
+        
+    return ref_img_fnl, disp_ref_img_fnl, psimg
