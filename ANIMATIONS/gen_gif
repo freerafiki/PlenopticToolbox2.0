@@ -1,0 +1,21 @@
+#!/bin/sh -e
+FOLDER_NAME="$1"
+echo "Trying to create animation for scene $FOLDER_NAME"
+
+cd $FOLDER_NAME
+COLOR_FOLDER="Views/Color"
+cd $COLOR_FOLDER
+ENDING="_animation.gif"
+ANIMATION_NAME="$FOLDER_NAME/$COLOR_FOLDER/color$ENDING"
+echo "creating $ANIMATION_NAME"
+convert -delay 15 -loop 0 *.png $ANIMATION_NAME
+echo "created in $PWD"
+
+DISPS_FOLDER="Views/Disps"
+cd $FOLDER_NAME
+cd $DISPS_FOLDER
+ANIMATION_DISP_NAME="$FOLDER_NAME/$DISPS_FOLDER/disp$ENDING"
+echo "creating $ANIMATION_DISP_NAME"
+convert -delay 15 -loop 0 *.png $ANIMATION_DISP_NAME
+echo "created in $PWD"
+
