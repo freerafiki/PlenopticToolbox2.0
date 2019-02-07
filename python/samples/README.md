@@ -61,9 +61,9 @@ Where `-disp` is the path to the disparity image, `-cfg` to the .xml file, `-nam
 
 Using the same idea of the refocused image, we can shift the point where we extract the patches from and create a series of perspective views to simulate a grid of images. 
 
-Input Image                |  Refocused Image          | Input Image               |  Refocused Image
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/dragon76_ref_img.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant_small.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant76_ref_img.png)
+Sample GIF               |  Sample GIF          |
+:-------------------------:|:-------------------------:|
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATION/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATION/small_ani_dragon.gif) |  
 
 This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
 
