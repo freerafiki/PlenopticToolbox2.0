@@ -51,10 +51,25 @@ Input Image                |  Refocused Image          | Input Image            
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
 ![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/dragon76_ref_img.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant_small.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant76_ref_img.png)
 
-NB: This is a "beta" version, and it contains several parameters to be tuned. Please look at the script code for a deeper explanation
+Example run:
+
+`python3 refocused_img.py ~/img.png -disp ~/path_disp_img.png -cfg ~/config.xml -o ~/output_folder/ -name outputName -plus True`
+
+Where `-disp` is the path to the disparity image, `-cfg` to the .xml file, `-name` the preferred output name and `-plus` enable saving the quantization map for debug
+
+### Create perspective views (perspective_views.py)
+
+Using the same idea of the refocused image, we can shift the point where we extract the patches from and create a series of perspective views to simulate a grid of images. 
+
+Input Image                |  Refocused Image          | Input Image               |  Refocused Image
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/dragon76_ref_img.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant_small.png) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Plant76_ref_img.png)
+
+This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
 
 Example run:
 
-`python3 refocused_img.py ~/img.png -disp ~/path_disp_img.png -cfg ~/config.xml -ps 7 -lvl 6 -o ~/output_folder/ -name outputName -plus True`
+`python3 perspective_views.py ~/path_to_the___parameters.json -hv N -vv M`
 
-Where `-disp` is the path to the disparity image, `-cfg` to the .xml file, `-ps` the maximum patch size, `-lvl` the quantization levels, `-name` the preferred output name and `-plus` enable saving the quantization map for debug
+Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views.
+The script will create a folder named `Views` and three subfolder named `Color, Disps, Other` where the views will be saved.
