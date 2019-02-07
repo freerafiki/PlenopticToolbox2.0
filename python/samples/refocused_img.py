@@ -58,24 +58,25 @@ if __name__ == "__main__":
     isReal = True
     if args.scene_type == 'synth':
         isReal = False
-    img_aif, disp_aif, psimg = rtxrnd.refocused_using_patches(lenses, lens_imgs, disp_imgs, min_d, max_d, max_ps, layers, isReal)
-
+    print("Creating the refocused image..")
+    pv, pv_disp, psimg = rtxrnd.generate_a_perspective_view(lenses, lens_imgs, disp_imgs, min_d, max_d, 0, 0, isReal)
+    
     # show the images
     plt.subplot(121)
     plt.title("Refocused Image")
-    plt.imshow(img_aif)
+    plt.imshow(pv)
     plt.subplot(122)
     plt.title("Corresponding Disparity")
-    plt.imshow(disp_aif)
+    plt.imshow(pv_disp)
     
     # save them
     ref_img_name = "{0}{1}_ref_img.png".format(args.output_path, args.output_name)
     ref_disp_name = "{0}{1}_ref_disp_jet.png".format(args.output_path, args.output_name)
     ref_disp_gray = "{0}{1}_ref_disp.png".format(args.output_path, args.output_name)
-    plt.imsave(ref_img_name, img_aif)
-    plt.imsave(ref_disp_name, disp_aif, cmap='jet')
-    plt.imsave(ref_disp_gray, disp_aif, cmap='gray')
+    plt.imsave(pv, img_aif)
+    plt.imsave(pv_disp, disp_aif, cmap='jet')
+    plt.imsave(pv_disp, disp_aif, cmap='gray')
     if args.save_plus:
-        leyers_map = "{0}{1}_layers_map_img.png".format(args.output_path, args.output_name)
-        plt.imsave(leyers_map, psimg, cmap='jet')
+        layers_map = "{0}{1}_layers_map_img.png".format(args.output_path, args.output_name)
+        plt.imsave(layers_map, psimg, cmap='jet')
         

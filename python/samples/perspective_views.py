@@ -122,7 +122,7 @@ if __name__ == "__main__":
         for x_sh in range(x_left, x_right):
             
             print("generating view {0}, {1}..".format(x_sh, y_sh))
-            pv, pv_disp, psimg = rtxrnd.generate_a_perspective_view(lenses, lens_imgs, disp_imgs, min_d, max_d, x_sh*2, y_sh*2, layers, isReal)
+            pv, pv_disp, psimg = rtxrnd.generate_a_perspective_view(lenses, lens_imgs, disp_imgs, min_d, max_d, x_sh*2, y_sh*2, isReal)
             #views[:,:,:,x_sh,y_sh] = pv
             #plt.figure()
             #plt.subplot(121)
