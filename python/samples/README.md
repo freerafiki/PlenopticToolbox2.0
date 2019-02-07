@@ -8,15 +8,6 @@ Up to now four scripts are provided, more can be added in case of request (just 
 
 Super simple file to test that everything is working. It just reads a file (real or synthetic) by giving as input the path to the configuration file (the .xml, (name of image and configuration file should be the same!) or the .json) and shows the image.
 
-### Read the image and change between micro-images and subaperture images (subapertureimages.py).
-
-Input Image                |  Subaperture Views
-:-------------------------:|:-------------------------:
-![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Dragon_Processed%20copy.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/Dragon_Processed_subarpertureimages%20copy.jpg)
-
-Since many people are used to the Lytro (Plenoptic 1.0 Cameras) this script allows you to exchange the way the data is shown. Plenoptic 2.0 Cameras have different physical properties, thus the subaperture views are quite small and low-quality. The script is mostly thought as an example of what you would get treating these kind of images as if they were Lytro images.
-The images shown here are downscaled for visualization purposes.
-
 ### Change the format of the synthetic images (from_synth_to_xml.py)
 
 It reads all micro-images contained in the given folder (where the scene.json file is) and save the image as .png file with his relative .xml configuration file, so that it looks like a real image and can be easier accessed.
