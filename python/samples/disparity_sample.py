@@ -60,7 +60,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if os.path.exists(args.output_path) is False:
-        raise OSError('Path {0} does not exist'.format(args.output_path))
+        os.makedirs(args.output_path)
+        #raise OSError('Path {0} does not exist'.format(args.output_path))
                           
     params = rtxmain.EvalParameters()
     params.filename = args.input_filename[0]
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     json_name = "{0}/{1}_parameters.json".format(args.output_path, pic_name)
     xml_name = "{0}/{1}_config.xml".format(args.output_path, pic_name)
 
-    plt.subplot(121)
+    #plt.subplot(121)
     #plt.title("Input Image")
     #plt.imshow(I)
     #plt.subplot(122)
@@ -99,6 +100,7 @@ if __name__ == "__main__":
     #plt.show()
     
     print("\nFinished, now saving everything... ")
+
 
     if Dgt is not None:
         print("Saving ground truth... ")
@@ -146,7 +148,6 @@ if __name__ == "__main__":
         parameters['conf'] = args.confidence_technique
         parameters['filename'] = args.input_filename[0]
         parameters['scene_type'] = args.scene_type
-        parameters['error'] = args.error
         parameters['method'] = params.method
         parameters['pic_name'] = pic_name
         parameters['image_path'] = img_name
@@ -157,6 +158,9 @@ if __name__ == "__main__":
         parameters['conf_path'] = conf_name
         parameters['config_path'] = xml_name
         parameters['output_path'] = args.output_path
+
+        if error_measurements is not None:
+            parameters['error'] = args.error
 
         with open(json_name, 'w') as outfile:
             json.dump(parameters, outfile)
