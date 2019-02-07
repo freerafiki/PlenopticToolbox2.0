@@ -63,7 +63,7 @@ Using the same idea of the refocused image, we can shift the point where we extr
 
 Sample GIF               |  Sample GIF          |
 :-------------------------:|:-------------------------:|
-![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATION/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATION/small_ani_dragon.gif) |  
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani.gif) |  
 
 This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
 
