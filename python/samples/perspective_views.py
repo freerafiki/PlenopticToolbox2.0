@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('-hv', dest='horizontal_views', default='3')
     parser.add_argument('-vv', dest='vertical_views', default='3')
     parser.add_argument('-jump', dest='jump_between_views', default='0')
-    parser.add_argument('-no-overlap', dest='no_overlapping', default='False')
+    parser.add_argument('--no_overlap', default=False, action='store_true')
     
     args = parser.parse_args()
 
@@ -121,15 +121,18 @@ if __name__ == "__main__":
     views = np.zeros((1093, 1651, 4, x_right - x_left, y_top - y_bottom))
     #plt.ion()
     viewcounter = 0
-    if args.no_overlapping is True:
-        non_overlap_factor = np.floor(np.floor(lenses[0,0].lens_diameter / 2) / 2)
-    else:
-        non_overlap_factor = 1
+    
+    if args.no_overlap is True:
+        #pdb.set_trace()
+        jump_between_views = np.ceil(np.floor(lenses[0,0].diameter / 2) / 4)
+
     for y_sh in range(y_bottom, y_top):
         for x_sh in range(x_left, x_right):
             
             print("generating view {0}, {1}..".format(x_sh, y_sh))
-            pv, pv_disp, psimg = rtxrnd.generate_a_perspective_view(lenses, lens_imgs, disp_imgs, min_d, max_d, x_sh*non_overlap_factor + jump_between_views, y_sh*non_overlap_factor + jump_between_views, layers, isReal)
+            x_shift = int(x_sh*jump_between_views)
+            y_shift = int(y_sh*jump_between_views)
+            pv, pv_disp, psimg = rtxrnd.generate_a_perspective_view(lenses, lens_imgs, disp_imgs, min_d, max_d, x_shift, y_shift, layers, isReal)
             #views[:,:,:,x_sh,y_sh] = pv
             #plt.figure()
             #plt.subplot(121)
@@ -169,3 +172,4 @@ if __name__ == "__main__":
     #    layers_map = "{0}{1}_layers_map_img.png".format(args.output_path, args.output_name)
     #    plt.imsave(layers_map, psimg, cmap='jet')
         
+
