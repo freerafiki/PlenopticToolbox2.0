@@ -180,6 +180,39 @@ def get_patch_size_fine(disp_img, min_d, max_d, max_ps, isReal=True, layers=3):
     
     return max(ps, 0)
 
+
+"""
+The idea is that if we can find the right parameters, the patch size should be 
+consistent across images.
+We know that if we have the diameter of the lens, the disparity can reach 
+up to almost half of it, and minimum will be close to zero.
+We also know that if for example disparity is close to zero, the patch size have to be really small 
+If disparity would be zero (focal plane case) then 1 pixel would be enough.
+If disparity would be half of the lens diameter, the patch size should be close to half of the half of the diameters
+so something like half o the disparity.
+We just select some values in the middle also, dividing disparity in slices.
+
+Also note that the patch size has to be odd (because of having one central pixel)
+Later we can use a radius and select circular patches and then we have more levels
+"""
+def get_patch_size_absolute(disp_img, lens_diameter, isReal=True):
+    
+    min_ps = 1
+    max_ps = np.floor(lens_diameter / 2)
+    if max_ps % 2 == 0:
+        max_ps += 1
+    number_of_different_sizes = (max_ps - min_ps) / 2 + 1
+    disparray = np.asarray(disp_img)
+    mean_d = np.mean(disparray) * max_ps
+    ps = np.ceil(mean_d / 2).astype(int)
+    
+    if ps < 1:
+        ps = 1
+
+    #print("disp {0} and patch size {1}".format(mean_d, ps))
+
+    return ps
+
 """
 REFOCUSING using patches of pixels from micro-images
 or total focus also, depending on the use of the actual disparity
