@@ -17,4 +17,11 @@ it should be run as
 
 It should output information about what is trying to do.
 
+The script will generate very large gif (using all the images!), so gif can be compressed using `ffmpeg` library:
+
+```
+ffmpeg -i animation.gif -vf scale=720:480 small_ani.gif
+```
+
+Using of course whatever other resolution you want instead of 720:480 if needed.
 
