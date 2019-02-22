@@ -13,7 +13,9 @@ It uses the [`convert` command](https://imagemagick.org/script/convert.php) that
 
 it should be run as 
 
-`sh gen_gif ~/complete_path_to_the_root_folder_where_you_will_find_the_Views_folder(without_Views_in_the_path)`
+```
+sh gen_gif ~/complete_path_to_the_root_folder_where_you_will_find_the_Views_folder(without_Views_in_the_path)
+```
 
 It should output information about what is trying to do.
 
