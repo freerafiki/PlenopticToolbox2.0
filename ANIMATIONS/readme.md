@@ -13,8 +13,17 @@ It uses the [`convert` command](https://imagemagick.org/script/convert.php) that
 
 it should be run as 
 
-`sh gen_gif ~/complete_path_to_the_root_folder_where_you_will_find_the_Views_folder(without_Views_in_the_path)`
+```
+sh gen_gif ~/complete_path_to_the_root_folder_where_you_will_find_the_Views_folder(without_Views_in_the_path)
+```
 
 It should output information about what is trying to do.
 
+The script will generate very large gif (using all the images!), so gif can be compressed using `ffmpeg` library:
+
+```
+ffmpeg -i animation.gif -vf scale=720:480 small_ani.gif
+```
+
+Using of course whatever other resolution you want instead of 720:480 if needed.
 
