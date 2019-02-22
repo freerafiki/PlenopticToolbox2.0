@@ -50,17 +50,34 @@ Where `-disp` is the path to the disparity image, `-cfg` to the .xml file, `-nam
 
 ### Create perspective views (perspective_views.py)
 
-Using the same idea of the refocused image, we can shift the point where we extract the patches from and create a series of perspective views to simulate a grid of images. 
+Using the same idea of the refocused image, we can shift the point where we extract the patches from and create a series of perspective views to simulate a grid of images. These images are created without taking into account the three lens type! To take them into account, check next sample script below!
 
 Sample GIF               |  Sample GIF          |
 :-------------------------:|:-------------------------:|
-![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani.gif) |  
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_cards.gif) |  
 
 This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
 
 Example run:
 
 `python3 perspective_views.py ~/path_to_the___parameters.json -hv N -vv M`
+
+Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views.
+The script will create a folder named `Views` and three subfolder named `Color, Disps, Other` where the views will be saved.
+
+### Create perspective views using only focused microlenses (focused_perspective_views.py)
+
+Using the same idea described above, but this time creating an image for each lens type and combining them using the disparity information (and the range of each microlens as explained in the .xml generated from RxLive software at the calibration) we can obtain one image. This is smaller, since we use less information (1/3 of micro-images), but should be more accurate.
+
+Sample GIF               |  Sample GIF          |
+:-------------------------:|:-------------------------:|
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_balls.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_plantball.gif) |  
+
+This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
+
+Example run:
+
+`python3 focused_perspective_views.py ~/path_to_the___parameters.json -hv N -vv M`
 
 Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views.
 The script will create a folder named `Views` and three subfolder named `Color, Disps, Other` where the views will be saved.
