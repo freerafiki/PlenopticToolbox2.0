@@ -17,7 +17,7 @@ v1 October 2018
 """
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Read an image and create a refocused version")
+    parser = argparse.ArgumentParser(description="Read an image and create an all-in-focus version")
     parser.add_argument(dest='input_filename', nargs=1, help="Name of the lens config file")
     parser.add_argument('-col', dest='colorimage_path', default=None)
     parser.add_argument('-conf', dest='conf_path', default=None)
@@ -33,8 +33,10 @@ if __name__ == "__main__":
     parser.add_argument('-hv', dest='horizontal_views', default='3')
     parser.add_argument('-vv', dest='vertical_views', default='3')
     parser.add_argument('-jump', dest='jump_between_views', default='1')
+    parser.add_argument('-patch_shape', dest='patch_shape', default='0')
     parser.add_argument('--no_overlap', default=False, action='store_true')
     parser.add_argument('--borders', default=True, action='store_false')
+
     
     args = parser.parse_args()
 
@@ -70,7 +72,9 @@ if __name__ == "__main__":
         
     max_ps = int(args.max_ps)
     layers = int(args.layers)
+    patch_shape = int(args.patch_shape)
     min_ps = max_ps - layers  
+
     #pdb.set_trace()
     print("\n******************\n")
     print("Loading the scene: colored image and disparity..")
@@ -94,14 +98,14 @@ if __name__ == "__main__":
     isReal = True
     if args.scene_type == 'synth':
         isReal = False
-    
+        
     number_of_horizontal_views = int(args.horizontal_views)
     number_of_vertical_views = int(args.vertical_views)
     jump_between_views = int(args.jump_between_views)
 
     # We create a folder to save the views
     print("\nGenerating the views and saving them..")
-    views_directory = args.output_path + '/Views_' + str(number_of_horizontal_views) + 'x' + str(number_of_vertical_views) + '/'
+    views_directory = args.output_path + '/FocusedViews_' + str(number_of_horizontal_views) + 'x' + str(number_of_vertical_views) + '/'
     if not os.path.exists(views_directory):
         os.makedirs(views_directory)
 
@@ -139,24 +143,23 @@ if __name__ == "__main__":
             print("generating view {0}, {1}..".format(x_sh, y_sh))
             x_shift = int(x_sh*jump_between_views)
             y_shift = int(y_sh*jump_between_views)
-            col_img, disp, psimg = rtxrnd.generate_a_perspective_view(lenses, lens_imgs, disp_imgs, min_d, max_d, x_shift, y_shift, args.borders, isReal)
+            image_color, initial_disp, refined_disp, patch_size_img = rtxrnd.generate_view_focused_micro_lenses(lenses, lens_imgs, disp_imgs, min_d, max_d, x_shift, y_shift, patch_shape,args.borders, isReal)
             name = "{}view_{:0>2d}_{:.0f}_{:.0f}.png".format(color_directory, viewcounter, x_sh, y_sh)
             dname = "{}disp_view_{:0>2d}_{:.0f}_{:.0f}.png".format(disp_directory, viewcounter, x_sh, y_sh)
-            
-            plt.imsave(name, col_img)
-            plt.imsave(dname, disp, cmap='jet')
+            plt.imsave(name, image_color)
+            plt.imsave(dname, refined_disp, cmap='jet')
+            #pdb.set_trace()
             if not wrote_first_line:
-                LFtxt.write("{} {} {} {} 3\n".format(int(y_top-y_bottom), int(x_right-x_left), col_img.shape[0], col_img.shape[1]))
+                LFtxt.write("{} {} {} {} 3\n".format(int(y_top-y_bottom), int(x_right-x_left), image_color.shape[0], image_color.shape[1]))
                 wrote_first_line = True
             LFtxt.write("{} {} {}\n".format(name, y_sh-y_bottom, x_sh-x_left))
             viewcounter += 1
 
     LFtxt.close()
     psimgname = "{}patchsizeimg.png".format(other_directory)
-    plt.imsave(psimgname, psimg)
+    plt.imsave(psimgname, patch_size_img)
 
 
     print("Finished!")
     print("\n******************\n")
-
 
