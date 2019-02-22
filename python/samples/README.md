@@ -23,7 +23,7 @@ A short example of how to read an image and calculate its disparity map. Several
 I added another feature and now it saves a confidence map (you can change the method to calculate confidence from parameters, check the python file for the comments). That can be used to cut the wrong disparity values and to do some post-processing on the disparity.
 
 For a further insight about the disparity estimation process, please refer to the papers
-- [_Palmieri L. , Op Het Veld R. and Koch R, Plenoptic Toolbox 2.0: Benchmarking of Depth Estimation Methods for MLA-based Focused Plenoptic Cameras_](http://data.mip.informatik.uni-kiel.de:555/wwwadmin/Publica/2018/2018_Palmieri_The%20Plenoptic%202.0%20Toolbox:%20Benchmarking%20of%20Depth%20Estimation%20Methods%20for%20MLA-Based%20Focused%20Plenoptic%20Cameras.pdf)
+- [_Palmieri L. , Op Het Veld R. and Koch R, Plenoptic Toolbox 2.0: Benchmarking of Depth Estimation Methods for MLA-based Focused Plenoptic Cameras, ICIP, 2018_](http://data.mip.informatik.uni-kiel.de:555/wwwadmin/Publica/2018/2018_Palmieri_The%20Plenoptic%202.0%20Toolbox:%20Benchmarking%20of%20Depth%20Estimation%20Methods%20for%20MLA-Based%20Focused%20Plenoptic%20Cameras.pdf)
 - [_Fleischmann O. and Koch R, Lens-Based Depth Estimation for Multi-focus Plenoptic Cameras, GCPR, 2014_](https://link.springer.com/content/pdf/10.1007/978-3-319-11752-2_33.pdf)
 - [_Palmieri L. and Koch R, Optimizing the Lens Selection Process for Multi-Focus Plenoptic Cameras and Numerical Evaluation, LF4CV @ CVPR, 2017_](http://openaccess.thecvf.com/content_cvpr_2017_workshops/w27/papers/Palmieri_Optimizing_the_Lens_CVPR_2017_paper.pdf)
 
