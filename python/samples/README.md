@@ -65,6 +65,7 @@ Example run:
 
 Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views.
 The script will create a folder named `Views` and three subfolder named `Color, Disps, Other` where the views will be saved.
+The script saves the images in a .png format, if you want to create an animated view or convert it to a matlab matrix (to get the same as Lytro images decoded using the LightField toolbox, check out the [scripts page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/scripts)
 
 ### Create perspective views using only focused microlenses (focused_perspective_views.py)
 
@@ -82,3 +83,4 @@ Example run:
 
 Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views.
 The script will create a folder named `Views` and three subfolder named `Color, Disps, Other` where the views will be saved.
+The script saves the images in a .png format, if you want to create an animated view or convert it to a matlab matrix (to get the same as Lytro images decoded using the LightField toolbox, check out the [scripts page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/scripts)
