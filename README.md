@@ -8,6 +8,7 @@ The code is completely open source and can be integrated and further developed f
 The python library allows you to work with such images (in particular with Raytrix images at the moment).
 
 For a more detailed explanation on how to use it, please refer to the [python page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python).
+To see what can already be done, check the [sample page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples)!
 
 ## Resources
 Here there are reference to some dataset we are creating for different applications
