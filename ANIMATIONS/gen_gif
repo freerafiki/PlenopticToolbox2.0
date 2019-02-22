@@ -3,6 +3,10 @@ FOLDER_NAME="$1"
 echo "Trying to create animation for scene $FOLDER_NAME"
 
 cd $FOLDER_NAME
+
+### HERE CHANGE Views into FocusedViews or Views_NxM is needed 
+## e.g. COLOR_FOLDER="FocusedViews_5x5/Color" 
+## remember no spaces!
 COLOR_FOLDER="Views/Color"
 cd $COLOR_FOLDER
 ENDING="_animation.gif"
@@ -11,6 +15,9 @@ echo "creating $ANIMATION_NAME"
 convert -delay 15 -loop 0 *.png $ANIMATION_NAME
 echo "created in $PWD"
 
+### HERE CHANGE Views into FocusedViews or Views_NxM is needed 
+## e.g. DISPS_FOLDER="FocusedViews_5x5/Disps" 
+## remember no spaces!
 DISPS_FOLDER="Views/Disps"
 cd $FOLDER_NAME
 cd $DISPS_FOLDER
