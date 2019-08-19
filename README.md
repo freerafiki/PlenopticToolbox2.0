@@ -1,8 +1,3 @@
-Title: PlenopticToolbox2.0  
-Author: Luca Palmieri  
-Address: lpa@informatik.uni-kiel.de  
-Last Update: December 2018
-
 # Plenoptic Toolbox 2.0
 The Plenoptic Toolbox 2.0 aims to help promote research using Focused Plenoptic Cameras (a.k.a. Plenoptic 2.0), 
 providing a dataset of real and synthetic images.
@@ -13,6 +8,7 @@ The code is completely open source and can be integrated and further developed f
 The python library allows you to work with such images (in particular with Raytrix images at the moment).
 
 For a more detailed explanation on how to use it, please refer to the [python page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python).
+To see what can already be done, check the [sample page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples)!
 
 ## Resources
 Here there are reference to some dataset we are creating for different applications
@@ -56,3 +52,7 @@ Physically based Blender Plug-in to simulate plenoptic 1.0 and 2.0 capturing pro
 
 
 
+
+## General Informations and Updates
+Contact Address: lpa@informatik.uni-kiel.de  
+Last Update: February 2019
