@@ -56,6 +56,9 @@ if __name__ == "__main__":
     parser.add_argument('-tconf', dest='confidence_technique', default='mlm')
     # whether to save or not the parameters file (default yes)
     parser.add_argument('-savepars', dest='save_parameters', default=True)
+    # add a sparse depth map
+    parser.add_argument('-sparse', dest='save_sparse', default=False)
+
     
     args = parser.parse_args()
 
@@ -168,6 +171,15 @@ if __name__ == "__main__":
     print("Saving estimated disparity... ")
     plt.imsave(disp_name, disp, vmin=disparities[0], vmax=disparities[-1], cmap='gray')
     plt.imsave(disp_name_col, disp, vmin=disparities[0], vmax=disparities[-1], cmap='jet')
+    if args.save_sparse:
+        #pdb.set_trace()
+        print("Saving sparse disparity..")
+        sp_disp_name = "{0}/{1}_sparse_disp_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
+        sp_disp_name_col = "{0}/{1}_sparse_disp_col_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
+        sparse_disp = disp * (Dconf > 0.7)
+        plt.imsave(sp_disp_name, sparse_disp, vmin=disparities[0], vmax=disparities[-1], cmap='gray')
+        plt.imsave(sp_disp_name_col, sparse_disp, vmin=disparities[0], vmax=disparities[-1], cmap='jet')
+
     print("Saving colored image... ")
     plt.imsave(img_name, I)
 

@@ -6,6 +6,7 @@ import numpy as np
 import argparse
 import json
 import os
+#from mpl_toolkits import mplot3d
 
 """
 Creates a refocused image. For now it is all-in-focus, but if the disparity map used would be constant, it would be focused only partly.
@@ -61,17 +62,14 @@ if __name__ == "__main__":
                 disparities = parameters['disparities']
                 args.number_of_disparities = len(disparities)
 
-    #if os.path.exists(args.output_path) is False:
-    #    raise OSError('Path {0} does not exist'.format(args.output_path))
-    #if os.path.exists(args.disp_path) is False:
-    #    raise OSError('Path for disparity image: {0} does not exist'.format(args.disp_path))
-    #if os.path.exists(args.config_path) is False:
-    #    raise OSError('Path for configuration (.xml) file: {0} does not exist'.format(args.config_path))
-        
     max_ps = int(args.max_ps)
     layers = int(args.layers)
     min_ps = max_ps - layers  
-    #pdb.set_trace()
+    full_name, nothing = args.config_path.split('.xml')
+    full_name2, nothing = full_name.split('_config')
+    separate_names = full_name2.split('/')
+    pic_name = separate_names[len(separate_names)-1]
+
     print("\n******************\n")
     print("Loading the scene: colored image and disparity..")
     print("\ncolored image: found at {0}..".format(args.colorimage_path))
@@ -101,7 +99,7 @@ if __name__ == "__main__":
 
     # We create a folder to save the views
     print("\nGenerating the views and saving them..")
-    views_directory = args.output_path + '/Views_' + str(number_of_horizontal_views) + 'x' + str(number_of_vertical_views) + '/'
+    views_directory = args.output_path + '/' + pic_name + '_Views_' + str(number_of_horizontal_views) + 'x' + str(number_of_vertical_views) + '/'
     if not os.path.exists(views_directory):
         os.makedirs(views_directory)
 
@@ -114,19 +112,19 @@ if __name__ == "__main__":
     other_directory = views_directory + 'Other/'
     if not os.path.exists(other_directory):
         os.makedirs(other_directory)
-
+    pcl_directory = views_directory + 'Pointclouds/' 
+    if not os.path.exists(pcl_directory):
+        os.makedirs(pcl_directory)
 
 
     x_left = - np.floor(number_of_horizontal_views / 2).astype(int);
     x_right = np.ceil(number_of_horizontal_views / 2).astype(int);
     y_bottom = - np.floor(number_of_vertical_views / 2).astype(int);
     y_top = np.ceil(number_of_vertical_views / 2).astype(int);
-    views = np.zeros((1093, 1651, 4, x_right - x_left, y_top - y_bottom))
-    #plt.ion()
+
     viewcounter = 0
     
     if args.no_overlap is True:
-        #pdb.set_trace()
         jump_between_views = np.ceil(np.floor(lenses[0,0].diameter / 2) / 4)
 
     LFtxt_path = other_directory + 'LF.txt'
@@ -137,9 +135,12 @@ if __name__ == "__main__":
         for x_sh in range(x_left, x_right):
             
             print("generating view {0}, {1}..".format(x_sh, y_sh))
+            c = 0
             x_shift = int(x_sh*jump_between_views)
             y_shift = int(y_sh*jump_between_views)
+
             col_img, disp, psimg = rtxrnd.generate_a_perspective_view(lenses, lens_imgs, disp_imgs, min_d, max_d, x_shift, y_shift, args.borders, isReal)
+
             name = "{}view_{:0>2d}_{:.0f}_{:.0f}.png".format(color_directory, viewcounter, x_sh, y_sh)
             dname = "{}disp_view_{:0>2d}_{:.0f}_{:.0f}.png".format(disp_directory, viewcounter, x_sh, y_sh)
             
@@ -150,6 +151,7 @@ if __name__ == "__main__":
                 wrote_first_line = True
             LFtxt.write("{} {} {}\n".format(name, y_sh-y_bottom, x_sh-x_left))
             viewcounter += 1
+            
 
     LFtxt.close()
     psimgname = "{}patchsizeimg.png".format(other_directory)

@@ -34,6 +34,7 @@ if __name__ == "__main__":
     parser.add_argument('-hv', dest='horizontal_views', default='3')
     parser.add_argument('-vv', dest='vertical_views', default='3')
     parser.add_argument('-jump', dest='jump_between_views', default='1')
+    parser.add_argument('-spl', dest='sample_per_lens', default='15')
     parser.add_argument('-patch_shape', dest='patch_shape', default='0')
     parser.add_argument('--no_overlap', default=False, action='store_true')
     parser.add_argument('--borders', default=True, action='store_false')
@@ -86,10 +87,6 @@ if __name__ == "__main__":
         print("* Disparity: True     *")
     else:
         print("* Disparity: False    *")
-    if args.view3D == True:
-        print("* 3DViews: True       *")
-    else:
-        print("* 3DViews: False      *")
     print("*                     *")
     print("***********************\n")    
     max_ps = int(args.max_ps)
@@ -107,31 +104,14 @@ if __name__ == "__main__":
     print("\ncolored image: found at {0}..".format(args.colorimage_path))
     print("disparity map: found at {0}..".format(args.disp_path))
 
-    if args.no_conf == True:
-        #a = xmlio.load_and_render(args.colorimage_path, args.disp_path, args.config_path)
-        lenses = xmlio.load_with_disp(args.colorimage_path, args.disp_path, args.config_path)
-    else:
-        print("confidence map: found at {0}..".format(args.conf_path))
-        #a = xmlio.load_and_render(args.colorimage_path, args.disp_path, args.config_path)
-        lenses = xmlio.load_triplet(args.colorimage_path, args.disp_path, args.conf_path, args.config_path) #, mask_path)
-
-    min_d = 0 #lenses[0,0].col_img.shape[0] * 2 # just a high number
-    max_d = 0
-
-    isReal = True
-    if args.scene_type == 'synth':
-        isReal = False
-        
     number_of_horizontal_views = int(args.horizontal_views)
     number_of_vertical_views = int(args.vertical_views)
-    jump_between_views = int(args.jump_between_views)
+    jump_between_views = float(args.jump_between_views)
+    sample_per_lens = int(args.sample_per_lens)
 
-    # We create a folder to save the views
-    print("\nGenerating the views and saving them..")
-    views_directory = args.output_path + '/' + pic_name + '_FocusedViews_' + str(number_of_horizontal_views) + 'x' + str(number_of_vertical_views) + '/'
+    views_directory = args.output_path + '/' + pic_name + '_Rendering_' + str(number_of_horizontal_views) + 'x' + str(number_of_vertical_views) + '_j' + str(jump_between_views) + '_spl' + str(sample_per_lens) + '/'
     if not os.path.exists(views_directory):
         os.makedirs(views_directory)
-
     color_directory = views_directory + 'Color/'
     if not os.path.exists(color_directory):
         os.makedirs(color_directory)
@@ -139,82 +119,25 @@ if __name__ == "__main__":
         disp_directory = views_directory + 'Disps/'
         if not os.path.exists(disp_directory):
             os.makedirs(disp_directory)
-    other_directory = views_directory + 'Other/'
-    if not os.path.exists(other_directory):
-        os.makedirs(other_directory)
-    if args.no_conf == False: 
-        conf_directory = views_directory + 'Confid/'
-        if not os.path.exists(conf_directory):
-            os.makedirs(conf_directory)
-
-    if args.view3D == True: 
-        v3d_directory = views_directory + '3DViews/'
-        if not os.path.exists(v3d_directory):
-            os.makedirs(v3d_directory)
-
     x_left = - np.floor(number_of_horizontal_views / 2).astype(int);
     x_right = np.ceil(number_of_horizontal_views / 2).astype(int);
     y_bottom = - np.floor(number_of_vertical_views / 2).astype(int);
     y_top = np.ceil(number_of_vertical_views / 2).astype(int);
-    
-    # I need the size of the input image and the 
+    views_position = np.zeros(((y_top-y_bottom),(x_right-x_left),2))
 
-    #plt.ion()
-    viewcounter = 0
-    
-    if args.no_overlap is True:
-        #pdb.set_trace()
-        jump_between_views = np.ceil(np.floor(lenses[0,0].diameter / 2) / 4)
-
-    LFtxt_path = other_directory + 'LF.txt'
-    LFtxt = open(LFtxt_path, "w") 
-    wrote_first_line = False
-
+    raw_images, interp_images, calibs = xmlio.load_raw_and_interp(args.colorimage_path, args.disp_path, args.config_path)
     for y_sh in range(y_bottom, y_top):
         for x_sh in range(x_left, x_right):
-            
+            x_shift = (x_sh*jump_between_views)
+            y_shift = (y_sh*jump_between_views)
             print("generating view {0}, {1}..".format(x_sh, y_sh))
-            x_shift = int(x_sh*jump_between_views)
-            y_shift = int(y_sh*jump_between_views)
-            image_color, initial_disp, refined_disp, patch_size_img, confidence, proc_disp = rtxrnd.generate_view_focused_micro_lenses_v2(lenses, min_d, max_d, args.no_conf, x_shift, y_shift, patch_shape, args.borders, isReal)
-            name = "{}view_{:0>2d}_{:.0f}_{:.0f}.png".format(color_directory, viewcounter, x_sh, y_sh)          
-            plt.imsave(name, image_color)
-            #pdb.set_trace()
-            mask = rtxrnd.createMaskBG(image_color, [0.1, 0.4, 0.25, 0.9, 0.4, 0.9])
-            kernel = np.ones((5,5),np.uint8)
-            mask = cv2.erode(mask.astype(np.uint8),kernel,iterations = 1)
-            mask3c = np.dstack((mask, mask, mask))
-            if args.no_disp == False:
-                dname = "{}disp_view_{:0>2d}_{:.0f}_{:.0f}.png".format(disp_directory, viewcounter, x_sh, y_sh)
-                pdname = "{}proc_disp_view_{:0>2d}_{:.0f}_{:.0f}.png".format(disp_directory, viewcounter, x_sh, y_sh)
-                sdname = "{}sparse_disp_view_{:0>2d}_{:.0f}_{:.0f}.png".format(disp_directory, viewcounter, x_sh, y_sh)
-                plt.imsave(dname, refined_disp * mask, cmap='jet')
-                plt.imsave(pdname, proc_disp * mask, cmap='jet')
-                plt.imsave(sdname, refined_disp * (confidence > 0.5) * mask, cmap='jet')
-            if not wrote_first_line:
-                LFtxt.write("{} {} {} {} 3\n".format(int(y_top-y_bottom), int(x_right-x_left), image_color.shape[0], image_color.shape[1]))
-                wrote_first_line = True
-            LFtxt.write("{} {} {}\n".format(name, y_sh-y_bottom, x_sh-x_left))
-            if args.no_conf == False:
-                conf_name =  "{}confidence_{:0>2d}_{:.0f}_{:.0f}.png".format(conf_directory, viewcounter, x_sh, y_sh)
-                plt.imsave(conf_name, confidence, cmap='gray')
-            if args.view3D == True:
-                sparse_disparity = refined_disp * (confidence > 0.5) * mask
-                disparity = refined_disp * (confidence > 0.2) * mask
-                scaling = 1000;
-                sparse_pcl_name =  "sparse_disp_3Dview_{:0>2d}_{:.0f}_{:.0f}".format(viewcounter, x_sh, y_sh)
-                pcl_name =  "disp_3Dview_{:0>2d}_{:.0f}_{:.0f}".format(viewcounter, x_sh, y_sh)
-                proc_pcl_name =  "proc_disp_3Dview_{:0>2d}_{:.0f}_{:.0f}".format(viewcounter, x_sh, y_sh)
-                ok = rtxrnd.save_3D_view(image_color, sparse_disparity, scaling, v3d_directory, sparse_pcl_name)
-                ok = rtxrnd.save_3D_view(image_color, disparity, scaling, v3d_directory, pcl_name)
-                ok = rtxrnd.save_3D_view(image_color, proc_disp * mask, scaling, v3d_directory, proc_pcl_name)
-            viewcounter += 1
-
-    LFtxt.close()
-    psimgname = "{}patchsizeimg.png".format(other_directory)
-    plt.imsave(psimgname, patch_size_img)
-
-
+            view, coarse_disp = rtxrnd.render_interp_img_focused(raw_images, interp_images, calibs, x_shift, y_shift, sample_per_lens, args.borders)
+            name = "{}view_{:.0f}_{:.0f}.png".format(color_directory, x_sh, y_sh)          
+            plt.imsave(name, view)
+    if args.no_disp == False:
+        nameD = "{}coarse_disp_{:.0f}_{:.0f}.png".format(disp_directory, x_sh, y_sh)          
+        plt.imsave(nameD, coarse_disp)    
+                
     print("Finished!")
     print("\n******************\n")
 

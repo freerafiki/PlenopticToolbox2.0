@@ -33,13 +33,17 @@ def estimate_disp(args):
     
     scene_type = args.scene_type
     print("******************\nLoading the scene..\n")
-    lenses = rtxIO.load_scene(args.filename, args.analyze_err)
+    #pdb.set_trace()
+    if args.differentNames == False:
+        lenses = rtxIO.load_scene(args.filename, args.analyze_err)
+    else:
+        lenses = rtxIO.load_scene_diffNames(args.filename, args.configfilename)
     
     diam = lenses[0, 0].diameter
     max_disp = float(args.max_disp) 
     min_disp = float(args.min_disp) 
     num_disp = float(args.num_disp)
-    
+    #pdb.set_trace()
     #max_lens_dist = np.linalg.norm(np.dot(B, rtxhexgrid.HEX_OFFSETS[args.max_ring][0]))
     
     disparities = np.arange(min_disp, max_disp, (max_disp - min_disp) / num_disp) #16.0 / max_lens_dist)
@@ -68,6 +72,7 @@ def estimate_disp(args):
         coarse_disp = regularize_coarse(lenses, coarse_costs_merged, disparities, penalty1=args.coarse_penalty1, penalty2=args.coarse_penalty2)
         fine_costs = augment_costs_coarse(fine_costs, coarse_disp, lens_variance, disparities, coarse_weight=args.coarse_weight, struct_var=args.struct_var)
     
+    #pdb.set_trace()
     print("\nStep 2) Regularizing and extracing disparity map..\n")
     fine_disps, fine_disps_interp, fine_val, wta_depths, wta_depths_interp, wta_val, confidence = regularized_fine(lenses, fine_costs, disparities, args.penalty1, args.penalty2, args.max_cost, conf_tec=args.confidence_technique, conf_sigma=args.conf_sigma)
        
@@ -858,6 +863,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         ### CALCULATE THE CONFIDENCE USING A METHOD
         minimum_costs = np.min(sgm_cost, axis=2)
 
+        #pdb.set_trace()
         if conf_tec == 'oev':
             # TODO max does not work on arrays
             num_denom = 0
@@ -886,7 +892,11 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
             #conf_tec == 'mlm':
             exp_cost = np.exp(-minimum_costs/(2*np.power(conf_sigma,2)))
             denom_cost = np.sum(np.exp(-sgm_cost/(2*np.power(conf_sigma,2))), axis=2)
-            confidence[l] = exp_cost / denom_cost
+            #zeros = denom_cost == 0
+            #denom_cost = denom_cost + zeros * np.max(denom_cost)
+            confidence_map = exp_cost / denom_cost
+            confidence_map[np.isnan(confidence_map)] = 0
+            confidence[l] = confidence_map
 
     return fine_depths, fine_depths_interp, fine_depths_val, wta_depths, wta_depths_interp, wta_depths_val, confidence
     
@@ -935,7 +945,7 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
         if i % 100 == 0:
             progress_hook("Building Cost Volume: processing lens {0}/{1}".format(i, num_lenses))
         
-  
+        
         # calculate a first guess of the disparity based on the first circle
         fine, coarse, coarse_merged, lens_var = calc_costs_per_lens(lens, nb_lenses, disparities, max_cost, technique)
         nb_offsets, curr_disp_avg = nb_strategy(lens, lenses, coarse, disparities, max_cost=max_cost, nb_args=nb_args)
@@ -955,8 +965,13 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
                 coarse = coarse_2
 
         num_targets += len(fine)  
+        # coarse_costs_merged[lcoord].shape = [numdisp, ]
         coarse_costs_merged[lcoord]  =  rtxdisp.merge_costs_additive(coarse, max_cost)
+        # coarse_costs[lcoord].shape = [2 * len(nb_lenses), numdisp]
+        #                           if refine is False, [len(nb_lenses), numdisp]
+        #                           len(fine) can be used!
         coarse_costs[lcoord] = coarse
+        #fine_costs[lcoord].shape = [numdisp, imgside, imgside]
         fine_costs[lcoord] = np.array(rtxdisp.merge_costs_additive(fine, max_cost))
     
         lens_std[lcoord] = lens_var
@@ -1000,3 +1015,8 @@ class EvalParameters(object):
         self.lut_trade_off = 1
         self.num_disp = 12
         self.method = 'real_lut'
+        self.differentNames = False
+        self.configfilename = ''
+        self.maskpath = ''
+        self.disppath = ''
+        self.colorimagepath = ''

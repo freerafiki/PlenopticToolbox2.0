@@ -12,11 +12,13 @@ if __name__ == '__main__':
     scenename = 'scene'
     picname = sys.argv[1] # this should be the name of the scene (Alley, Bowling..)
     # substitute "..synthetic_images" with the path where you saved the synthetic scenes
-    lensespath = "/data1/palmieri/Dataset/{0}/{1}.json".format(picname, scenename)
+    lensespath = "..synthetic_images/{0}/{1}.json".format(picname, scenename)
 
     lenses = rtxsio.load_from_json(lensespath)
     #..synthetic_images/
-    real_path = "/data1/palmieri/2018/October/testplenoptic/{0}".format(picname)
+    savingname = picname[-16:]
+    outputpath = '/outputpath/'
+    real_path = "{0}/{1}".format(outputpath, savingname)
 
     # save the .xml file    
     rtxsio.save_xml(real_path, lenses)
@@ -32,5 +34,7 @@ if __name__ == '__main__':
     disp = rtxrnd.render_lens_imgs(lenses, disp_imgs)
     
     # save the colored image
-    plt.imsave("/data1/palmieri/2018/October/testplenoptic/{0}.png".format(picname), img)
-    plt.imsave("/data1/palmieri/2018/October/testplenoptic/{0}_disp.png".format(picname), disp, vmin=np.min(disp), vmax=np.max(disp), cmap='jet')
+    plt.imsave("{0}/{1}.png".format(outputpath, savingname), img)
+    disp_output_path = '/outputpath/'
+    plt.imsave("{0}/{1}_disp.png".format(disp_output_path, savingname), disp, vmin=np.min(disp), vmax=np.max(disp), cmap='gray')
+    plt.imsave("{0}/{1}_disp_col.png".format(disp_output_path, savingname), disp, vmin=np.min(disp), vmax=np.max(disp), cmap='jet')
