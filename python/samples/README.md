@@ -94,7 +94,7 @@ Sample GIF               |  Sample GIF          |
 :-------------------------:|:-------------------------:|
 ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/RTX055_resize60.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/RTX055_3x3.gif) |  
 Here many images (169) with very low parallax and low resolution | On the right, fewer images (9) with higher parallax and slightly higher resolution |
-Parameters: `N=13, M=13, J=0.35, S=7`| Parameters: `N=13, M=13, J=2.0, S=9` |
+Parameters: `N=13, M=13, J=0.35, S=7`| Parameters: `N=3, M=3, J=2.0, S=9` |
 
 This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
 
@@ -102,6 +102,6 @@ Example run:
 
 `python3 render_view_2g.py ~/path_to_the___parameters.json -hv N -vv M -j J -spl S`
 
-Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views. Here `J` is the jump between views (as said this can be decimal, for experience when the number of views is more than 7x7, jump should be less than one, but of course, it depends from the optical setup and the distance between object and camera, so take this as a suggestion only). Lastly, `S` is the sampling pattern (for now is same in both direction), a large value will result in high resolution subaperture images (like 13 or 15 will bring something like 1600x1000 pixels images) a small value will create smaller images (7 samples should account for around 600x400).
+Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views. Here `J` is a factor applied to the jump (or shift) between views (as said this can be decimal, for experience when the number of views is more than 7x7, jump should be less than one, but of course, it depends from the optical setup and the distance between object and camera, so take this as a suggestion only). Of course, the shift is calculated from the disparity, but a constant factor is applied. Lastly, `S` is the sampling pattern (for now is same in both direction), a large value will result in high resolution subaperture images (like 13 or 15 will bring something like 1600x1000 pixels images) a small value will create smaller images (7 samples should account for around 600x400).
 The script will create a folder named `FocusedViews_NxM` and three subfolder named `Color, Disps, Other` where the views will be saved.
 The script saves the images in a .png format, if you want to create an animated view or convert it to a matlab matrix (to get the same as Lytro images decoded using the LightField toolbox, check out the [scripts page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/scripts)
