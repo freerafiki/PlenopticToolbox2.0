@@ -1,5 +1,5 @@
 #!/bin/sh -e
-FOLDER_NAME="$1"
+FOLDER_NAME=$1
 echo "Trying to create animation for scene $FOLDER_NAME"
 
 cd $FOLDER_NAME

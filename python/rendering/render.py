@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import rendering.filters as filters
 from skimage import io, color
 import os
-from cv2.ximgproc import *
+#from cv2.ximgproc import *
 import scipy.interpolate as sinterp
 
 def render_lens_imgs(lenses, lens_imgs, img_shape=None):
