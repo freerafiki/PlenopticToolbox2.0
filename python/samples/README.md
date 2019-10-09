@@ -84,3 +84,22 @@ Example run:
 Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views.
 The script will create a folder named `FocusedViews_NxM` and three subfolder named `Color, Disps, Other` where the views will be saved.
 The script saves the images in a .png format, if you want to create an animated view or convert it to a matlab matrix (to get the same as Lytro images decoded using the LightField toolbox, check out the [scripts page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/scripts)
+
+
+### Second generation for rendering: create higher quality perspective views  (render_view_2g.py)
+
+Using the same idea described above, but this time putting a little bit more effort into the generation process. While before I was selecting the pixels to be tiled together to create the rendered image, now I sample pixel colors (at decimal values) and create a patch using this values. So this allows to have a slightly better image (some artifacts appearing with the old method are reduced) and also to control the parameters more, the number of images and the disparity shift between them (since we are not constraint from integer, we can have a wide range). That means we can create an almost arbitrary number of images (a lot of images with very low parallax or fewer images with more parallax). Also we can control the sampling in terms of resolution, that means if we would have to select an area of 5 pixel, we can sample 5 times (so take each pixel) or 10 times (extracting a value every half of a pixel) and so on. So using this sampling value we can control resolution, meaning we can create small (around 600x400, like Lytro, lower I guess it won't be that useful, but is possible) or large (around 1600x1000 or even higher if needed) subaperture images.
+
+Sample GIF               |  Sample GIF          |
+:-------------------------:|:-------------------------:|
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/resize60_RTX55_2g.gif)  |  coming |  
+
+This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
+
+Example run:
+
+`python3 render_view_2g.py ~/path_to_the___parameters.json -hv N -vv M -j J -spl S`
+
+Where `-hv` and `-vv` are the number of viewpoints in x and y direction, so that you will get `NxM` views. Here `J` is the jump between views (as said this can be decimal, for experience when the number of views is more than 7x7, jump should be less than one, but of course, it depends from the optical setup and the distance between object and camera, so take this as a suggestion only). Lastly, `S` is the sampling pattern (for now is same in both direction), a large value will result in high resolution subaperture images (like 13 or 15 will bring something like 1600x1000 pixels images) a small value will create smaller images (7 samples should account for around 600x400).
+The script will create a folder named `FocusedViews_NxM` and three subfolder named `Color, Disps, Other` where the views will be saved.
+The script saves the images in a .png format, if you want to create an animated view or convert it to a matlab matrix (to get the same as Lytro images decoded using the LightField toolbox, check out the [scripts page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/scripts)
