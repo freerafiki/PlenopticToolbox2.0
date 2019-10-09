@@ -93,7 +93,8 @@ Using the same idea described above, but this time putting a little bit more eff
 Sample GIF               |  Sample GIF          |
 :-------------------------:|:-------------------------:|
 ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/RTX055_resize60.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/RTX055_3x3.gif) |  
-Here 13 x 13 images with a 0.35 factor of the parallax between them | Here 3 x 3 images with 2.0 factor of the parallax |
+Here many images (169) with very low parallax and low resolution | On the right, fewer images (9) with higher parallax and slightly higher resolution |
+Parameters: `N=13, M=13, J=0.35, S=7`| Parameters: `N=13, M=13, J=2.0, S=9` |
 
 This is a new version and it should be run using the .json file produced from disparity_sample.json. The .json file contains all parameters (and filename of the images produced) so it makes it easier to run several scripts. This way there are no parameters that have to be tuned.
 
