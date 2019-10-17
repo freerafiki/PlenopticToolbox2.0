@@ -180,9 +180,10 @@ if __name__ == "__main__":
             name = "{}view_{:0>2d}_{:.0f}_{:.0f}.png".format(color_directory, viewcounter, x_sh, y_sh)          
             plt.imsave(name, image_color)
             #pdb.set_trace()
-            mask = rtxrnd.createMaskBG(image_color, [0.1, 0.4, 0.25, 0.9, 0.4, 0.9])
-            kernel = np.ones((5,5),np.uint8)
-            mask = cv2.erode(mask.astype(np.uint8),kernel,iterations = 1)
+            mask = np.ones_like(refined_disp)
+            # mask = rtxrnd.createMaskBG(image_color, [0.1, 0.4, 0.25, 0.9, 0.4, 0.9])
+            # kernel = np.ones((5,5),np.uint8)
+            # mask = cv2.erode(mask.astype(np.uint8),kernel,iterations = 1)
             mask3c = np.dstack((mask, mask, mask))
             if args.no_disp == False:
                 dname = "{}disp_view_{:0>2d}_{:.0f}_{:.0f}.png".format(disp_directory, viewcounter, x_sh, y_sh)

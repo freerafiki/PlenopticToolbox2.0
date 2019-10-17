@@ -9,17 +9,18 @@ import os
 import cv2
 
 """
-Creates a refocused image. For now it is all-in-focus, but if the disparity map used would be constant, it would be focused only partly.
-It uses the depth map to detect the size of a patch to extract from each micro-lens and tile them together.
-It does use upscaling for small patches (lenses that exhibits low disparity) to render the image at a resolution of 1/4 of the original image. This can also be changed in the rendering file (rendering/render.py)
+Rendering of images from a plenoptic image and its disparity map.
+It renders sampling the micro-images, and it can render various configurations,
+changing number of horizontal and vertical views, and the disparity range between them.
+Also, changing the number of samples will affect the resolution of the rendered images.
 --------------
-v1 October 2018
+v1 September 2019
 @ Luca Palmieri
 """
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Read an image and create an all-in-focus version")
-    parser.add_argument(dest='input_filename', nargs=1, help="Name of the lens config file")
+    parser.add_argument(dest='input_filename', nargs=1, help="parameters json file")
     parser.add_argument('-col', dest='colorimage_path', default=None)
     parser.add_argument('-conf', dest='conf_path', default=None)
     parser.add_argument('-disp', dest='disp_path', default=None)
@@ -126,13 +127,16 @@ if __name__ == "__main__":
     views_position = np.zeros(((y_top-y_bottom),(x_right-x_left),2))
 
     raw_images, interp_images, calibs = xmlio.load_raw_and_interp(args.colorimage_path, args.disp_path, args.config_path)
+    i_counter = 0
+    tot_number = (y_top-y_bottom) * (x_right-x_left)
     for y_sh in range(y_bottom, y_top):
         for x_sh in range(x_left, x_right):
             x_shift = (x_sh*jump_between_views)
             y_shift = (y_sh*jump_between_views)
-            print("generating view {0}, {1}..".format(x_sh, y_sh))
+            print("{}/{}: generating view {}, {}..".format(i_counter, tot_number, x_sh, y_sh))
             view, coarse_disp = rtxrnd.render_interp_img_focused(raw_images, interp_images, calibs, x_shift, y_shift, sample_per_lens, args.borders)
-            name = "{}view_{:.0f}_{:.0f}.png".format(color_directory, x_sh, y_sh)          
+            name = "{}view_{:03d}_{:.0f}_{:.0f}.png".format(color_directory, i_counter, x_sh, y_sh)          
+            i_counter += 1
             plt.imsave(name, view)
     if args.no_disp == False:
         nameD = "{}coarse_disp_{:.0f}_{:.0f}.png".format(disp_directory, x_sh, y_sh)          
