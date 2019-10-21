@@ -9,7 +9,8 @@ Sample GIF               |  Sample GIF          |  Sample GIF          |  Sample
 
 Here a downscaled version of a gif created with the script `gen_gif`
 
-the script `gen_gif` is a shell script to generate a gif from the views generated from the perspective_views.py script, for example.
+#### VIEWS
+The script `gen_gif` is a shell script to generate a gif from the views generated from the perspective_views.py script, for example.
 It uses the [`convert` command](https://imagemagick.org/script/convert.php) that is part of the [ImageMagick](https://www.imagemagick.org/) package, so you need to install that if you want to use it.
 
 it should be run as 
@@ -28,7 +29,7 @@ ffmpeg -i animation.gif -vf scale=720:480 small_ani.gif
 
 Using of course whatever other resolution you want instead of 720:480 if needed.
 
-
+#### REFOCUSING
 Regarding the focal stack, a gif where the focal plane is moved can be generated using 
 ```
 sh fs_gif '/data1/palmieri/COLLABORATIONS/Waqas/IMAGES/RAYTRIX/OUTPUT/RTX012' time resize spl
