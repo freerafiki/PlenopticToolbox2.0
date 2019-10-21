@@ -30,7 +30,7 @@ Using of course whatever other resolution you want instead of 720:480 if needed.
 #### REFOCUSING
 Regarding the focal stack, a gif where the focal plane is moved can be generated using 
 ```
-sh fs_gif '/data1/palmieri/COLLABORATIONS/Waqas/IMAGES/RAYTRIX/OUTPUT/RTX012' time resize spl
+sh fs_gif '~/complete_path_to_the_root_folder_where_you_will_find_the_Views_folder(without_Views_in_the_path)' time resize spl
 ```
 where `ticks` controls the speed at which the frames are changing (simple version: `FPS = 100/ticks`, so if `ticks=20` we have 5 Frames per second (FPS), more detailed explanation of what ticks are [here](http://www.imagemagick.org/script/command-line-options.php#delay), delay is actually the command used in this case), `resize` applies a resizing factor to the image (so the final resolution will be scaled in percentage (`resize 100` means same resolution, `resize 50` half the resolution) and `spl` is the number of samples you used in the generation of the image (see the [sample page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples) for detail on that)
 
