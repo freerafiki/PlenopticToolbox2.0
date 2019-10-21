@@ -4,6 +4,8 @@ The samples given here are intended to give some hints about how to use the avai
 
 Now three major scripts are provided, more can be added in case of request (just write me at lpa@informatik.uni-kiel.de)
 
+Older scripts or basic programs are also available in the [other_stuff](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples/other_stuff) page.
+
 ### Estimate the disparity (disparity_sample.py)
 
 Input Image                |  Disparity Map
