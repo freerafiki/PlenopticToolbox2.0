@@ -2,9 +2,11 @@
 
 This page is just as an explanation to create small gifs from images (viewpoints, disparity or so) in order to show what can be done with the images.
 
-Sample GIF               |  Sample GIF          |  Sample GIF          |
-:-------------------------:|:-------------------------:|:-------------------------:|
+
+Sample GIF               |  Sample GIF          |  Sample GIF          |  Sample GIF          |
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_cards.gif) | ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_glasses.gif) |  
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/focalstack_d20_r70.gif) | 
 
 Here a downscaled version of a gif created with the script `gen_gif`
 
@@ -28,8 +30,10 @@ ffmpeg -i animation.gif -vf scale=720:480 small_ani.gif
 Using of course whatever other resolution you want instead of 720:480 if needed.
 
 
-Regarding the focal stack, a gif where the focal plane is moved can be generated using
+Regarding the focal stack, a gif where the focal plane is moved can be generated using 
 ```
 sh fs_gif '/data1/palmieri/COLLABORATIONS/Waqas/IMAGES/RAYTRIX/OUTPUT/RTX012' time resize spl
 ```
 where `ticks` controls the speed at which the frames are changing (simple version: `FPS = 100/ticks`, so if `ticks=20` we have 5 Frames per second (FPS), more detailed explanation of what ticks are [here](http://www.imagemagick.org/script/command-line-options.php#delay), delay is actually the command used in this case), `resize` applies a resizing factor to the image (so the final resolution will be scaled in percentage (`resize 100` means same resolution, `resize 50` half the resolution) and `spl` is the number of samples you used in the generation of the image (see the [sample page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples) for detail on that)
+
+PS: It also uses the [`convert` command](https://imagemagick.org/script/convert.php) that is part of the [ImageMagick](https://www.imagemagick.org/) package
