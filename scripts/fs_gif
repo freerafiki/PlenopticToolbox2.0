@@ -1,0 +1,10 @@
+#!/bin/sh -e
+FOLDER_NAME=$1
+echo "Trying to create focal stack animation for scene $FOLDER_NAME"
+
+cd $FOLDER_NAME
+
+FS_FOLDER="FocalStack_spl$4"
+cd $FS_FOLDER
+ANIMATION_NAME="focalstack_d$2_r$3.gif"
+convert -delay $2 -loop 0 *.png -resize $3% $ANIMATION_NAME
