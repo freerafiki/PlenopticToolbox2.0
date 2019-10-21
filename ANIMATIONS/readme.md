@@ -5,8 +5,7 @@ This page is just as an explanation to create small gifs from images (viewpoints
 
 Sample GIF               |  Sample GIF          |  Sample GIF          |  Sample GIF          |
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
-![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_cards.gif) | ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_glasses.gif) |  
-![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/focalstack_d20_r70.gif) | 
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_dragon.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_cards.gif) | ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/small_ani_glasses.gif) |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/focalstack_d20_r70.gif) | 
 
 Here a downscaled version of a gif created with the script `gen_gif`
 
