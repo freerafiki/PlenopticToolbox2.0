@@ -23,9 +23,9 @@ For a further insight about the disparity estimation process, please refer to th
 
 Example run:
 
-`python3 disparity_sample.py ~/path_to_file.xml -dmin 0 -dmax 10 -err False -scene 'synth'`
+`python3 disparity_sample.py ~/path_to_file.xml -dmin 0 -dmax 10 -err False -scene 'real'`
 
-where `~/path_to_file.xml` is the path to the .xml file **(NB: the script now assumes that image and configuration file have same name, just different extensions, so image should be `~/path_to_file.png`)**, `-dmin` and `-dmax` are respectively the minimum and maximum disparity, `-err True` enables the error analysis (it will work only if a ground truth is available, so only for synthetic images and `-scene 'synth'` describe scene type (`'synth'` = synthetic or `'real'` = real).
+where `~/path_to_file.xml` is the path to the .xml file **(NB: the script now assumes that image and configuration file have same name, just different extensions, so image should be `~/path_to_file.png`)**, `-dmin` and `-dmax` are respectively the minimum and maximum disparity, `-err True` enables the error analysis (it will work only if a ground truth is available, so only for synthetic images) and `-scene 'real'` describe scene type (`'synth'` = synthetic or `'real'` = real).
 
 
 
@@ -58,7 +58,7 @@ Sample GIF               |  Sample GIF          |
 :-------------------------:|:-------------------------:|
 ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/focalstack_d20_r70.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/RTX031_focalstack_d20_r70.gif) |  
 
-Parameters for the above images: `fpmin 0.1 fpmax 0.95 fstep 0.025 spl 11`
+Parameters for the above images: `fmin=0.1 FMAX=0.95 FS=0.025 S=11`
 
 Example run:
 
