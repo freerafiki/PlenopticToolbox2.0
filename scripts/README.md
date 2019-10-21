@@ -2,7 +2,8 @@ Here a collection of small scripts that can be useful when using the code!
 
 ### GIF
 
-gen_gif is meant to be used to create gif animation for perspective views, check out the [animation page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/ANIMATIONS) for a more complete explanation!
+gen_gif is meant to be used to create gif animation for perspective views, while fs_gif is meant to create the gif for the refocusing, check out the [animation page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/ANIMATIONS) for a more complete explanation!
+
 
 
 
