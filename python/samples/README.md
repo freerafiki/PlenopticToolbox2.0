@@ -55,7 +55,8 @@ We constrain the focal planes with the size of the patch. Objects that have less
 Sample GIF               |  Sample GIF          |
 :-------------------------:|:-------------------------:|
 ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/focalstack_d20_r70.gif)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/RTX031_focalstack_d20_r70.gif) |  
-Parameters: `fpmin 0.1 fpmax 0.95 fstep 0.025 spl 11`|
+
+Parameters for the above images: `fpmin 0.1 fpmax 0.95 fstep 0.025 spl 11`
 
 Example run:
 
