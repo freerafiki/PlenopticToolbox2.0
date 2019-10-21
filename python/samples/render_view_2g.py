@@ -133,8 +133,9 @@ if __name__ == "__main__":
         for x_sh in range(x_left, x_right):
             x_shift = (x_sh*jump_between_views)
             y_shift = (y_sh*jump_between_views)
-            print("{}/{}: generating view {}, {}..".format(i_counter, tot_number, x_sh, y_sh))
-            view, coarse_disp = rtxrnd.render_interp_img_focused(raw_images, interp_images, calibs, x_shift, y_shift, sample_per_lens, args.borders)
+            print("{}/{}: generating view {}, {}..".format(i_counter+1, tot_number, x_sh, y_sh))
+            view, coarse_disp, disp = rtxrnd.render_interp_img_and_disp(raw_images, interp_images, calibs, x_shift, y_shift, sample_per_lens, args.borders)
+            pdb.set_trace()
             name = "{}view_{:03d}_{:.0f}_{:.0f}.png".format(color_directory, i_counter, x_sh, y_sh)          
             i_counter += 1
             plt.imsave(name, view)

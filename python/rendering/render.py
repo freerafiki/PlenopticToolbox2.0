@@ -1042,7 +1042,8 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
         intPCy = np.ceil(coords_resized[0]).astype(int)
         if intPCx > hs and resolution[1] - intPCx > hs and intPCy > hs and resolution[0] - intPCy > hs:
             #pdb.set_trace()
-            sampling_pattern = np.arange(-sampling_distance*sam_per_lens/2, sampling_distance*sam_per_lens/2 + sampling_distance, sampling_distance)
+            #sampling_pattern = np.arange(-sampling_distance*sam_per_lens/2, sampling_distance*sam_per_lens/2 + sampling_distance, sampling_distance)
+            sampling_pattern = np.arange(-sampling_distance*np.floor(sam_per_lens/2), sampling_distance*np.floor(sam_per_lens/2) + sampling_distance, sampling_distance)
             sampling_pattern_x = sampling_pattern + shiftx
             sampling_pattern_y = sampling_pattern + shifty
             # extract the patch 
@@ -1055,6 +1056,7 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
             interp_patch_r = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,0])
             interp_patch_g = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,1])
             interp_patch_b = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,2])
+            
             #create the grid for sampling
             sampling_pattern_for_patch_y = np.arange((intPCy-coords_resized[0]), (intPCy-coords_resized[0]+sam_per_lens), 1)
             sampling_pattern_for_patch_x = np.arange((intPCx-coords_resized[1]), (intPCx-coords_resized[1]+sam_per_lens), 1)
@@ -1067,22 +1069,30 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
             # stack the 3 channels together
             rgb_interp_patch_img = np.dstack((r_channel, g_channel, b_channel))
             rgb_interp_patch_img = np.clip(rgb_interp_patch_img, 0, np.max(rgb_interp_patch_img))
-            
+
+            # plt.figure(1)
+            # plt.imshow(rgb_interp_patch_img)
+            # plt.figure(2)
+            # plt.imshow(patch_values)
+            # plt.figure(3)
+            # xxx = np.round(pc[0]).astype(int)
+            # yyy = np.round(pc[1]).astype(int)
+            # plt.imshow(img[xxx-20:xxx+21,yyy-20:yyy+21])
+            # pdb.set_trace()
             # fill the images
-            rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:, ft] += rgb_interp_patch_img
-            rnd_cnt[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3))
+            rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:, ft] += rgb_interp_patch_img 
+            rnd_cnt[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3)) 
             coarse_d[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1])) * single_val_disp
             
-            #pdb.set_trace()
     img0vals0 = (rnd_cnt[:,:,:,0] == 0).astype(np.uint8)
-    img0vals1 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
-    img0vals2 = (rnd_cnt[:,:,:,2] == 0).astype(np.uint8)
+    img1vals0 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
+    img2vals0 = (rnd_cnt[:,:,:,2] == 0).astype(np.uint8)
     rnd0 = rnd_img[:,:,:,0] / (rnd_cnt[:,:,:,0] + img0vals0)
-    rnd1 = rnd_img[:,:,:,1] / (rnd_cnt[:,:,:,1] + img0vals1)
-    rnd2 = rnd_img[:,:,:,2] / (rnd_cnt[:,:,:,2] + img0vals2)
+    rnd1 = rnd_img[:,:,:,1] / (rnd_cnt[:,:,:,1] + img1vals0)
+    rnd2 = rnd_img[:,:,:,2] / (rnd_cnt[:,:,:,2] + img2vals0)
     coarse_d0 = coarse_d[:,:,0] / (rnd_cnt[:,:,0,0] + img0vals0[:,:,0])
-    coarse_d1 = coarse_d[:,:,1] / (rnd_cnt[:,:,0,1] + img0vals1[:,:,0])
-    coarse_d2 = coarse_d[:,:,2] / (rnd_cnt[:,:,0,2] + img0vals2[:,:,0])
+    coarse_d1 = coarse_d[:,:,1] / (rnd_cnt[:,:,0,1] + img1vals0[:,:,0])
+    coarse_d2 = coarse_d[:,:,2] / (rnd_cnt[:,:,0,2] + img2vals0[:,:,0])
 
     coarse_d_tot = (coarse_d0 + coarse_d1 + coarse_d2 ) / lens_types
 
@@ -1105,6 +1115,7 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
     weights_t2 = 1/lens_types - y_t0 / 3 * 1 - y_t1 / 3 * 1 + y_t2 /3 * 2
     
     weights = np.zeros_like(rnd0)
+    coarse_d_tot = np.clip(coarse_d_tot, 0, 0.99)
     idisp = np.floor(coarse_d_tot / quantization_step).astype(np.uint8)
     #pdb.set_trace()
     weights[:,:,0] = weights_t0[idisp]
@@ -1120,23 +1131,14 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
     rnd_nof = rnd0 * weights0_w3c + rnd1 * weights1_w3c + rnd2 * weights2_w3c
 
     filt_after = filters.median_filter(rnd_nof, filt_size)
-    #pdb.set_trace()
-    #plt.subplot(131); plt.imshow(rnd_tot)
-    #plt.subplot(132); plt.imshow(rnd_nof)
-    #plt.subplot(133); plt.imshow(filt_after)
-    #plt.subplot(131); plt.imshow(filters.median_filter(rnd0, filt_size));
-    #plt.subplot(132); plt.imshow(filters.median_filter(rnd1, filt_size));
-    #plt.subplot(133); plt.imshow(filters.median_filter(rnd2, filt_size));
-    #pdb.set_trace()
+    
     rnd_img_final = np.clip(filt_after, 0, 1)
     padding = hs + np.floor(hs/2).astype(int)
     if cut_borders:
         rnd_img_final = rnd_img_final[padding:rnd_img_final.shape[0]-padding, padding:rnd_img_final.shape[1]-padding,:]
-    #plt.ion()
-    #plt.imshow((rnd_img))
-    #pdb.set_trace()
-    #plt.imsave('/data1/palmieri/COLLABORATIONS/Waqas/IMAGES/RAYTRIX/OUTPUT/RTX008/interp2.png', np.clip(rnd_img, 0, 1))
+    
     return rnd_img_final, coarse_d_tot
+
 
 ## IN PROGRESS
 def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_lens, cut_borders):
@@ -1205,11 +1207,15 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
                 data_interp_g(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                 data_interp_b(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1])))
             patch_values = np.clip(patch_values, 0, np.max(patch_values))
+            # disparity
+            disp_patch_values = disp_interp(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1])
+            disp_patch_values = np.clip(disp_patch_values, 0, np.max(disp_patch_values))
             #print("patch_values size {}".format(patch_values.shape))
             # interpolate the values
             interp_patch_r = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,0])
             interp_patch_g = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,1])
             interp_patch_b = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,2])
+            interp_patch_d = sinterp.RectBivariateSpline(range(disp_patch_values.shape[0]), range(disp_patch_values.shape[1]), disp_patch_values[:,:])
             #create the grid for sampling
             sampling_pattern_for_patch_y = np.arange((intPCy-coords_resized[0]), (intPCy-coords_resized[0]+sam_per_lens), 1)
             sampling_pattern_for_patch_x = np.arange((intPCx-coords_resized[1]), (intPCx-coords_resized[1]+sam_per_lens), 1)
@@ -1218,27 +1224,36 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
             r_channel = interp_patch_r(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             g_channel = interp_patch_g(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             b_channel = interp_patch_b(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
+            d_channel = interp_patch_d(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
 
             # stack the 3 channels together
             rgb_interp_patch_img = np.dstack((r_channel, g_channel, b_channel))
-            rgb_interp_patch_img = np.clip(rgb_interp_patch_img, 0, np.max(rgb_interp_patch_img))
+
+            # clip in  case interpolation gives some values slightly above 1 or below 0
+            rgb_interp_patch_img = np.clip(rgb_interp_patch_img, 0, 1) #np.max(rgb_interp_patch_img))
+            d_interp_patch_img = np.clip(d_channel, 0, 1) #np.max(d_interp_patch_img))
             
             # fill the images
             rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:, ft] += rgb_interp_patch_img
             rnd_cnt[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3))
+            rnd_disp[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += d_interp_patch_img
             coarse_d[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1])) * single_val_disp
             
-            #pdb.set_trace()
+    #pdb.set_trace()
     img0vals0 = (rnd_cnt[:,:,:,0] == 0).astype(np.uint8)
-    img0vals1 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
-    img0vals2 = (rnd_cnt[:,:,:,2] == 0).astype(np.uint8)
+    img1vals0 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
+    img2vals0 = (rnd_cnt[:,:,:,2] == 0).astype(np.uint8)
     rnd0 = rnd_img[:,:,:,0] / (rnd_cnt[:,:,:,0] + img0vals0)
-    rnd1 = rnd_img[:,:,:,1] / (rnd_cnt[:,:,:,1] + img0vals1)
-    rnd2 = rnd_img[:,:,:,2] / (rnd_cnt[:,:,:,2] + img0vals2)
+    rnd1 = rnd_img[:,:,:,1] / (rnd_cnt[:,:,:,1] + img1vals0)
+    rnd2 = rnd_img[:,:,:,2] / (rnd_cnt[:,:,:,2] + img2vals0)
     coarse_d0 = coarse_d[:,:,0] / (rnd_cnt[:,:,0,0] + img0vals0[:,:,0])
-    coarse_d1 = coarse_d[:,:,1] / (rnd_cnt[:,:,0,1] + img0vals1[:,:,0])
-    coarse_d2 = coarse_d[:,:,2] / (rnd_cnt[:,:,0,2] + img0vals2[:,:,0])
+    coarse_d1 = coarse_d[:,:,1] / (rnd_cnt[:,:,0,1] + img1vals0[:,:,0])
+    coarse_d2 = coarse_d[:,:,2] / (rnd_cnt[:,:,0,2] + img2vals0[:,:,0])
+    rnd_disp0 = rnd_disp[:,:,0] / (rnd_cnt[:,:,0,0] + img0vals0[:,:,0])
+    rnd_disp1 = rnd_disp[:,:,1] / (rnd_cnt[:,:,0,1] + img1vals0[:,:,0])
+    rnd_disp2 = rnd_disp[:,:,2] / (rnd_cnt[:,:,0,2] + img2vals0[:,:,0])
 
+    # coarse disp
     coarse_d_tot = (coarse_d0 + coarse_d1 + coarse_d2 ) / lens_types
 
     #pdb.set_trace()
@@ -1267,6 +1282,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
     weights[:,:,2] = weights_t2[idisp]
 
     #pdb.set_trace()
+    rnd_disp_nof = rnd_disp0 * weights[:,:,0] + rnd_disp1 * weights[:,:,1] + rnd_disp2 * weights[:,:,2]
     
     #rnd_tot = rnd0f * weights + rnd1f * weights + rnd2f * weights
     weights0_w3c = np.dstack((weights[:,:,0], weights[:,:,0], weights[:,:,0]))
@@ -1275,23 +1291,21 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
     rnd_nof = rnd0 * weights0_w3c + rnd1 * weights1_w3c + rnd2 * weights2_w3c
 
     filt_after = filters.median_filter(rnd_nof, filt_size)
+    disp_filt = filters.median_filter(rnd_disp_nof, filt_size*2-1)
     #pdb.set_trace()
-    #plt.subplot(131); plt.imshow(rnd_tot)
-    #plt.subplot(132); plt.imshow(rnd_nof)
-    #plt.subplot(133); plt.imshow(filt_after)
-    #plt.subplot(131); plt.imshow(filters.median_filter(rnd0, filt_size));
-    #plt.subplot(132); plt.imshow(filters.median_filter(rnd1, filt_size));
-    #plt.subplot(133); plt.imshow(filters.median_filter(rnd2, filt_size));
-    #pdb.set_trace()
+
     rnd_img_final = np.clip(filt_after, 0, 1)
+    rnd_disp_final = np.clip(disp_filt, 0, 1)
     padding = hs + np.floor(hs/2).astype(int)
     if cut_borders:
         rnd_img_final = rnd_img_final[padding:rnd_img_final.shape[0]-padding, padding:rnd_img_final.shape[1]-padding,:]
+        coarse_d_tot = coarse_d_tot[padding:coarse_d_tot.shape[0]-padding, padding:coarse_d_tot.shape[1]-padding]
+        rnd_disp_final = rnd_disp_final[padding:rnd_disp_final.shape[0]-padding, padding:rnd_disp_final.shape[1]-padding]
     #plt.ion()
     #plt.imshow((rnd_img))
-    #pdb.set_trace()
+    pdb.set_trace()
     #plt.imsave('/data1/palmieri/COLLABORATIONS/Waqas/IMAGES/RAYTRIX/OUTPUT/RTX008/interp2.png', np.clip(rnd_img, 0, 1))
-    return rnd_img_final, coarse_d_tot
+    return rnd_img_final, coarse_d_tot, rnd_disp_final
 
 
 def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per_lens, cut_borders):
@@ -1435,8 +1449,10 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
     weights_t2 = 1/lens_types - y_t0 / 3 * 1 - y_t1 / 3 * 1 + y_t2 /3 * 2
     
     weights = np.zeros_like(rnd0)
+    coarse_d_tot = np.clip(coarse_d_tot, 0, 1)
     idisp = np.floor(coarse_d_tot / quantization_step).astype(np.uint8)
-    idisp = np.clip(idisp, 0, np.max(idisp)-1)
+    
+    
     weights[:,:,0] = weights_t0[idisp]
     weights[:,:,1] = weights_t1[idisp]
     weights[:,:,2] = weights_t2[idisp]
