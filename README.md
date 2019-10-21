@@ -55,4 +55,3 @@ Physically based Blender Plug-in to simulate plenoptic 1.0 and 2.0 capturing pro
 
 ## General Informations and Updates
 Contact Address: lpa@informatik.uni-kiel.de  
-Last Update: February 2019
