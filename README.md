@@ -2,6 +2,8 @@
 The Plenoptic Toolbox 2.0 aims to help promote research using Focused Plenoptic Cameras (a.k.a. Plenoptic 2.0), 
 providing a dataset of real and synthetic images.
 
+![3Dani](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/animation.gif)
+
 ## Code
 Inside the python folder there are all information regarding the code structure and how to use it, with some sample that can be used as a reference. Code is developed in Python with some parts connected to C via Cython.
 The code is completely open source and can be integrated and further developed for research projects.
