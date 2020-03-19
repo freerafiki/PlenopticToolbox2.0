@@ -69,7 +69,7 @@ def read_calibration(filename):
     calibration["lens_base_x"] = _floats_from_section(root, "lens_base_x", ["x", "y"])
     calibration["lens_base_y"] = _floats_from_section(root, "lens_base_y", ["x", "y"])
     calibration["sub_grid_base"] = _floats_from_section(root, "sub_grid_base", ["x", "y"])
-    
+
     lens_types = []
     i = 0
     sec = _section_with_attrib(root, "lens_type", "id", str(i))
@@ -810,6 +810,7 @@ def load_raw_and_interp(img_filename, disp_name, config_filename):
 
     img = plt.imread(img_filename)
     disp = plt.imread(disp_name)
+    #pdb.set_trace()
     calib = read_calibration(config_filename)
 
     #pdb.set_trace()
@@ -838,6 +839,48 @@ def load_raw_and_interp(img_filename, disp_name, config_filename):
     #lcoords = rtxhexgrid._axial_coordinates(calib.lbasis, coords)
 
     return imgs, interps, calibs
+
+
+"""
+TODO: 
+Lots of methods should be put together into a unique "loading"
+function, that depending on parameters loads the different stuff
+"""
+def load_files(config_file, images_paths, interpolation=False):
+
+    # images should be a list
+    images = []
+    for path in images_paths:
+        images.append(plt.imread(path))
+
+    # calibration/configuration file
+    calib = read_calibration(config_file)
+    # here we assume all images have same shape!
+    img_shape = np.asarray(images[0].shape[0:2])
+    coords, ny, nx, sy, sx, img_c = rtxhexgrid.hex_lens_grid_plus(img_shape, calib.lens_diameter, calib.rot_angle, calib.offset, calib.lbasis)
+    
+    # local grid within a lens
+    local_grid = rtxlens.LocalLensGrid(calib.lens_diameter)
+    x, y = local_grid.x, local_grid.y
+    
+    calibs = [calib, coords, local_grid]
+
+    if interpolation:
+        img = images[0]
+        # the image grid in pixels used for the bivariate spline interpolation
+        gridy, gridx = range(img.shape[0]), range(img.shape[1])
+
+        # interpolated data
+        data_interp_r = sinterp.RectBivariateSpline(gridy, gridx, img[:,:,0])
+        data_interp_g = sinterp.RectBivariateSpline(gridy, gridx, img[:,:,1])
+        data_interp_b = sinterp.RectBivariateSpline(gridy, gridx, img[:,:,2])
+        disp = images[1]
+        disp_interp = sinterp.RectBivariateSpline(gridy, gridx, disp[:,:,0])
+        interps = [data_interp_r, data_interp_g, data_interp_b, disp_interp]
+    else:
+        interps = []
+
+    return images, calibs, interps
 
 def load_and_render_at(img_filename, disp_name, config_filename, shiftx, shifty, cut_borders):
 
