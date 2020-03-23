@@ -1491,33 +1491,6 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
             # clip in  case interpolation gives some values slightly above 1 or below 0
             rgb_interp_patch_img = np.clip(rgb_interp_patch_img, 0, 1) #np.max(rgb_interp_patch_img))
             d_interp_patch_img = np.clip(d_channel, 0, 1) * patch_mask#np.max(d_interp_patch_img))
-            
-            if pc[1] > 2080 and pc[0] > 2501 and pc[1] < 2120 and pc[0] < 2550 and shiftx > 0 and shifty < 0:
-
-                # fig 1
-                plt.figure(1)
-                grid_y, grid_x = np.meshgrid(sampling_pattern_y[:-1], sampling_pattern_x[:-1])
-                ref_gy = grid_y + rgb_values.shape[1] / 2
-                ref_gx = grid_x + rgb_values.shape[0] / 2
-                plt.imshow(rgb_values[:,:,:])
-                plt.scatter(ref_gx, ref_gy)
-
-                # fig 2
-                plt.figure(2)
-                plt.imshow(patch_values)
-                #plt.scatter(sampling_pattern_for_patch_y, sampling_pattern_x)
-                plt.show()
-                pdb.set_trace()
-            # plt.figure(1)
-            # plt.subplot(221); plt.imshow(patch_values)
-            # plt.subplot(222); plt.imshow(rgb_interp_patch_img)
-            # plt.subplot(223); plt.imshow(disp_patch_values)
-            # plt.subplot(224); plt.imshow(d_interp_patch_img)
-            # print("disp is {}, sampling distance is {}, sample per lens are {}".format(single_val_disp, patch_size_for_sampling, sam_per_lens))
-            # # #plt.figure(2)
-            # # #plt.subplot(121); plt.imshow(patch_values - rgb_interp_patch_img)
-            # # #plt.subplot(122); plt.imshow(disp_patch_values - d_interp_patch_img)
-            # pdb.set_trace()
 
             # fill the images
             rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:, ft] += rgb_interp_patch_img
