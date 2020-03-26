@@ -133,7 +133,7 @@ def lens_sweep(src_lens, dst_lenses, disparities, technique, hws=1, max_cost=10.
             # Here the costs are calculated using the chosen technique
             if technique == 'ssd':
                 
-                diff = np.pow((dst_img - src_img), 2)
+                diff = np.power((dst_img - src_img), 2)
                 
             elif technique == 'census':
             

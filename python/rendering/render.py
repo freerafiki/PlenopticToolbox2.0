@@ -3,7 +3,7 @@ import numpy as np
 import pdb
 #import cv2
 import matplotlib.pyplot as plt
-import rendering.filters as filters
+from rendering import filters
 from skimage import io, color
 import os
 #from cv2.ximgproc import *

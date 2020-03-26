@@ -1,11 +1,13 @@
 """
 It contains the information about the hexagonal grid of the micro-lenses
 ----
-@veresion v1 - December 2017
+@version v1 - December 2017
 @author Luca Palmieri
 """
 
 import numpy as np
+import pdb
+import matplotlib.pyplot as plt
 
 # coefficients of the basis vectors (pby, pbx) in lens units for the
 # first three rings of the same lens type
@@ -258,6 +260,7 @@ def hex_lens_grid_plus(img_shape, diam, angle, offset, B, filter_method='lens'):
     lenses = _axial_coordinates(B * diam, lens_centers)
     tlenses = _transform_grid(lenses, img_center, angle, offset)
     
+
     filters = dict()
     filters['center'] = lambda p: p[0] >=0 and p[0] < h and p[1] >= 0 and p[1] < w
     filters['lens']   = lambda p: (p[0] - r) >=0 and (p[0] + r) < h and  \
@@ -267,7 +270,7 @@ def hex_lens_grid_plus(img_shape, diam, angle, offset, B, filter_method='lens'):
         
         tlenses = {key: tlenses[key] for key in tlenses 
                    if filters[filter_method](tlenses[key])}
-        
+
     return tlenses, ny, nx, sy, sx, img_center
    
 def _lens_origin(lens_centers, img_center):

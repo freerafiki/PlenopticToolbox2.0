@@ -1,6 +1,7 @@
 ## FILTERS LIBRARY
 import scipy.ndimage.filters
 from rendering import render
+import scipy.ndimage as ndi
 import microlens.lens as rtxlens
 import scipy.interpolate as sinterp
 import numpy as np
@@ -14,6 +15,13 @@ def rgb2gray(col_img):
     gray = np.sum([col_img[:, :, i].astype(np.float64) * weights[i] for i in range(3)], axis=0)
 
     return gray
+
+def DoG(img, sigma1 = 1, sigma2 = 4):
+    
+    gray = rgb2gray(img)
+    g1 = ndi.gaussian_filter(gray, sigma1)
+    g2 = ndi.gaussian_filter(gray, sigma2)
+    return np.abs(g1 - g2)
 
 # The scipy ndimage filter adapted for 3-4 channels usage
 def median_filter(img, filter_size, footprint=None, changeColorSpace=False):

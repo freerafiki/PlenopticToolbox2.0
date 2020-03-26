@@ -8,6 +8,7 @@ Lens object, with his components
 import numpy as np
 import scipy.interpolate as sinterp
 import camera.camera as rtxcam
+import pdb
 
 
 class Lens(rtxcam.Camera):
@@ -70,8 +71,8 @@ class LocalLensGrid(object):
         # lens radius
         self.radius = diameter / 2.0
 
-        num_samples = np.ceil(diameter)
-        
+        num_samples = int(np.ceil(diameter))
+
         x = np.linspace(-1, 1, num_samples) * self.radius
         xx, yy = np.meshgrid(x, x)
      

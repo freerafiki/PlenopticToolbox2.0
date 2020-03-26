@@ -58,7 +58,8 @@ if __name__ == "__main__":
     parser.add_argument('-savepars', dest='save_parameters', default=True)
     # add a sparse depth map
     parser.add_argument('-sparse', dest='save_sparse', default=False)
-
+    # format for depth map
+    parser.add_argument('-format', dest='disparity_format', default='png')
     
     args = parser.parse_args()
 
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     params.scene_type = args.scene_type
     params.analyze_err = args.err
     params.confidence_technique = args.confidence_technique
-    
+
     full_name, nothing = params.filename.split('.xml')
     separate_names = full_name.split('/')
     pic_name = separate_names[len(separate_names)-1]
@@ -85,12 +86,12 @@ if __name__ == "__main__":
     I, disp, Dwta, Dgt, Dconf, Dcoarse, disparities, ncomp, disp_avg, new_offset, error_measurements, central_lens = rtxmain.estimate_disp(params)
 
     img_name = "{0}/{1}.png".format(args.output_path, pic_name) 
-    disp_name = "{0}/{1}_disp_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
-    disp_name_col = "{0}/{1}_disp_col_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
-    gt_name = "{0}/{1}_gt_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
-    gt_name_col = "{0}/{1}_gt_col_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
-    conf_name = "{0}/{1}_conf_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
-    conf_name_norm = "{0}/{1}_conf_norm_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
+    disp_name = "{0}/{1}_disp_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
+    disp_name_col = "{0}/{1}_disp_col_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
+    gt_name = "{0}/{1}_gt_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
+    gt_name_col = "{0}/{1}_gt_col_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
+    conf_name = "{0}/{1}_conf_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
+    conf_name_norm = "{0}/{1}_conf_norm_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
     json_name = "{0}/{1}_parameters.json".format(args.output_path, pic_name)
     xml_name = "{0}/{1}_config.xml".format(args.output_path, pic_name)
 
@@ -103,7 +104,6 @@ if __name__ == "__main__":
     #plt.show()
     
     print("\nFinished, now saving everything... ")
-
 
     if Dgt is not None:
         print("Saving ground truth... ")
@@ -162,9 +162,6 @@ if __name__ == "__main__":
         parameters['config_path'] = xml_name
         parameters['output_path'] = args.output_path
 
-        if error_measurements is not None:
-            parameters['error'] = args.error
-
         with open(json_name, 'w') as outfile:
             json.dump(parameters, outfile)
 
@@ -174,8 +171,8 @@ if __name__ == "__main__":
     if args.save_sparse:
         #pdb.set_trace()
         print("Saving sparse disparity..")
-        sp_disp_name = "{0}/{1}_sparse_disp_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
-        sp_disp_name_col = "{0}/{1}_sparse_disp_col_{2}_{3}_{4}_{5}.png".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique) 
+        sp_disp_name = "{0}/{1}_sparse_disp_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
+        sp_disp_name_col = "{0}/{1}_sparse_disp_col_{2}_{3}_{4}_{5}.{6}".format(args.output_path, pic_name, params.method, disparities[0], disparities[-1], params.technique, args.disparity_format) 
         sparse_disp = disp * (Dconf > 0.7)
         plt.imsave(sp_disp_name, sparse_disp, vmin=disparities[0], vmax=disparities[-1], cmap='gray')
         plt.imsave(sp_disp_name_col, sparse_disp, vmin=disparities[0], vmax=disparities[-1], cmap='jet')

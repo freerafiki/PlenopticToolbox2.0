@@ -22,11 +22,7 @@ if __name__ == "__main__":
     parser.add_argument('-conf', dest='conf_path', default=None)
     parser.add_argument('-disp', dest='disp_path', default=None)
     parser.add_argument('-cfg', dest='config_path', default=None)
-    parser.add_argument('-numd', dest='number_of_disparities', default=12)
     parser.add_argument('-o', dest='output_path', default=None)
-    parser.add_argument('-ps', dest='max_ps', default='7')
-    parser.add_argument('-lvl', dest='layers', default='4')
-    parser.add_argument('-scene', dest='scene_type', default='real')
     parser.add_argument('-plus', dest='save_plus', default=False)
     parser.add_argument('-name', dest='output_name', default='defaultname')
     parser.add_argument('-spl', dest='sample_per_lens', default='15')
@@ -34,19 +30,26 @@ if __name__ == "__main__":
     parser.add_argument('--no_overlap', default=False, action='store_true')
     parser.add_argument('--borders', default=True, action='store_false')
     parser.add_argument('--no_conf', default=False, action='store_true')
-    parser.add_argument('--view3D', default=False, action='store_true')
-    parser.add_argument('--no_disp', default=False, action='store_true')
     parser.add_argument('-fpmin', dest='fp_min', default='0')
     parser.add_argument('-fpmax', dest='fp_max', default='1')
     parser.add_argument('-fstep', dest='fp_step', default='0.1')
+    # whether to save or not the parameters file (default yes)
+    parser.add_argument('--nopars', dest='no_parameters', default=False, action='store_true')
+
 
     args = parser.parse_args()
 
+
     ### GETTING THE PARAMETERS FROM THE FILE
     input_file = args.input_filename[0]
-    if input_file is None:
-         raise OSError('Sorry we need the parameters file (.json). It should have been saved from the disparity_sample.py script \
-            Please give the path when running this file (ex. python3 disparity2D.py path_of_the_file.json')
+    if not os.path.exists(input_file):
+        print("\nERROR MESSAGE")
+        print('Sorry we need the parameters file (.json). It should have been saved from the disparity_sample.py script')
+        print('Please give the path when running this file (ex. python3 render_focal_stack.py path_of_the_file.json)')
+        print('If you did not already calculated once the disparity, create it by launching the script disparity_sample.py')
+        print('Yes, the focal stack does require the disparity at the moment, actually just a part of it to combine the differen lens types.')
+        raise OSError('Stopped! Read message')
+
     # or the parameters.json file is provided, then we can read the missing part from there
     else:
         with open(input_file) as f:
@@ -61,9 +64,6 @@ if __name__ == "__main__":
                 args.config_path = parameters['config_path']
             if args.output_path is None:
                 args.output_path = parameters['output_path']
-            if (int(args.number_of_disparities) == 0):
-                disparities = parameters['disparities']
-                args.number_of_disparities = len(disparities)
 
     #if os.path.exists(args.output_path) is False:
     #    raise OSError('Path {0} does not exist'.format(args.output_path))
@@ -72,10 +72,6 @@ if __name__ == "__main__":
     #if os.path.exists(args.config_path) is False:
     #    raise OSError('Path for configuration (.xml) file: {0} does not exist'.format(args.config_path))
   
-    max_ps = int(args.max_ps)
-    layers = int(args.layers)
-    patch_shape = int(args.patch_shape)
-    min_ps = max_ps - layers  
     full_name, nothing = args.config_path.split('.xml')
     full_name2, nothing = full_name.split('_config')
     separate_names = full_name2.split('/')
@@ -86,6 +82,7 @@ if __name__ == "__main__":
     print("Loading the scene: colored image and disparity..")
     print("\ncolored image: found at {0}..".format(args.colorimage_path))
     print("disparity map: found at {0}..".format(args.disp_path))
+    
 
     sample_per_lens = int(args.sample_per_lens)
 
@@ -106,7 +103,7 @@ if __name__ == "__main__":
         print("\n################")
         print("WARNING:\nIn this version of the code, it makes no sense to have negative (or zero) as the minimum focal plane, it would not create any meaningful image.")
         print("As of now, this value relates to the patch size that will be extracted from each lens in the rendering process, so a positive number is required")
-        print("We set automatically the minimum focal plane at0.1, otherwise re-run and set -fpmin to the value you want. Thanks")
+        print("We set automatically the minimum focal plane at 0.1, otherwise re-run and set -fpmin to the value you want. Thanks")
         fp_min = 0.1
         print("################\n")
     fp_max = float(args.fp_max)
@@ -128,6 +125,7 @@ if __name__ == "__main__":
     print("*                     *")
     print("***********************\n")  
     counter = 0
+    paths = []
     for fp in fps:
         print("{}/{}: generating view focused at {}..".format(counter+1, len(fps), fp))
         view, coarse_disp = rtxrnd.render_interp_img_at_focal_plane(raw_images, interp_images, calibs, fp, sample_per_lens, args.borders)
@@ -135,10 +133,29 @@ if __name__ == "__main__":
         name = "{}focal_stack_{:05d}_f{:3.3f}.png".format(fs_directory, counter, fp)  
         counter += 1        
         plt.imsave(name, view)
+        paths.append(name)
     # if args.no_disp == False:
     #     nameD = "{}coarse_disp_{:.0f}_{:.0f}.png".format(disp_directory, x_sh, y_sh)          
-    #     plt.imsave(nameD, coarse_disp)    
-                
+    #     plt.imsave(nameD, coarse_disp)  
+    json_name =   "{}focal_stack_parameters.json".format(fs_directory) 
+    if not args.no_parameters:
+        print("Saving parameter file... ")
+        parameters = dict()
+        parameters['fp_min'] = fp_min
+        parameters['fp_max'] = fp_max
+        parameters['fp_step'] = fp_step
+        parameters['paths'] = paths
+        parameters['planes_num'] = counter
+        parameters['planes'] = fps.tolist()
+        parameters['directory'] = fs_directory
+        parameters['width'] = view.shape[1]
+        parameters['height'] = view.shape[0]
+        parameters['parent_json'] = input_file
+        parameters['sample_per_lens'] = sample_per_lens
+
+        with open(json_name, 'w') as outfile:
+            json.dump(parameters, outfile)
+
     print("Finished!")
     print("\n******************\n")
 

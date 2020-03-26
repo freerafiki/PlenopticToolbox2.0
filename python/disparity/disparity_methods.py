@@ -19,7 +19,9 @@ import json
 import pdb
 import cv2
 import matplotlib.pyplot as plt
-import matplotlib.image
+#import matplotlib.image
+from pygco import cut_simple
+
 
 def estimate_disp(args):
 
@@ -838,7 +840,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         if i%1000==0:
             print("Regularization: Processing lens {0}/{1}".format(i, num_lenses))
         lens = lenses[l]
-        
+
         # prepare the cost shape: disparity axis is third axis (index [2] instead of [0])
         F = np.flipud(np.rot90(fine_costs[l].T))
 
@@ -849,7 +851,30 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         fine_depths[l] = np.argmin(sgm_cost, axis=2)
         
         # interpolated minima and values
-        fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
+        #fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
+
+        # cost should be C-Contiguous
+        sgm_cost_c = sgm_cost.copy(order='C')
+        # also in int32
+        sgm_cost_c_int = (sgm_cost_c  * 1000).astype(np.int32)
+        # number of disparities
+        n_disps = F.shape[2]
+
+        cut = 'unary'
+        if cut == 'potts':
+            # potts model
+            depth_cut = cut_simple(sgm_cost_c_int, -5 * np.eye(sgm_cost.shape[2], dtype=np.int32))
+        elif cut == 'unary':
+            # unary model
+            x, y = np.ogrid[:n_disps, :n_disps]
+            one_d_topology = np.abs(x - y).astype(np.int32).copy("C")
+            #pdb.set_trace()
+            depth_cut = cut_simple(sgm_cost_c_int, 5 * one_d_topology)
+        else:
+            print("No cut recognised. Do you wish to use potts or unary model?")
+            pdb.set_trace()
+
+        fine_depths_interp[l] = depth_cut
 
         #if i%1000==0:
         #    print("max interp: {0}".format(np.amax(fine_depths_interp[l])))
@@ -860,6 +885,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         # interpolated minima and values from the unregularized cost volume
         wta_depths_interp[l], wta_depths_val[l] = rtxdisp.cost_minima_interp(F, disp)
 
+        fine_depths_val[l] = wta_depths_val[l]
         ### CALCULATE THE CONFIDENCE USING A METHOD
         minimum_costs = np.min(sgm_cost, axis=2)
 
@@ -889,6 +915,9 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
             confidence[l][confidence[l] <= 0] = 0.0
             confidence[l][ind] = 1.0 / confidence[l][ind]
         else: 
+            # TODO
+            # check overflow in exp 
+            # and division for zero
             #conf_tec == 'mlm':
             exp_cost = np.exp(-minimum_costs/(2*np.power(conf_sigma,2)))
             denom_cost = np.sum(np.exp(-sgm_cost/(2*np.power(conf_sigma,2))), axis=2)

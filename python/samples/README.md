@@ -6,7 +6,7 @@ Now three major scripts are provided, more can be added in case of request (just
 
 Older scripts or basic programs are also available in the [other_stuff](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples/other_stuff) page.
 
-### Estimate the disparity (disparity_sample.py)
+### Estimate the disparity using stereo matching (disparity_sample.py)
 
 Input Image                |  Disparity Map
 :-------------------------:|:-------------------------:
@@ -23,9 +23,10 @@ For a further insight about the disparity estimation process, please refer to th
 
 Example run:
 
-`python3 disparity_sample.py ~/path_to_file.xml -dmin 0 -dmax 10 -err False -scene 'real'`
+`python3 disparity_sample.py ~/path_to_file.xml -dmin 0 -dmax 10 -err False -scene 'real' -format tiff`
 
 where `~/path_to_file.xml` is the path to the .xml file **(NB: the script now assumes that image and configuration file have same name, just different extensions, so image should be `~/path_to_file.png`)**, `-dmin` and `-dmax` are respectively the minimum and maximum disparity, `-err True` enables the error analysis (it will work only if a ground truth is available, so only for synthetic images) and `-scene 'real'` describe scene type (`'synth'` = synthetic or `'real'` = real).
+Recently, I added `-format` in case you need special formatting: at the moment `png` and `tiff` are accepted, but you may easily change the code if you need different ones. `png` is still as default.
 
 
 
@@ -74,21 +75,30 @@ Example run:
 Where `fpmin` and `fpmax` are respectively the minimum and the maximum focal plane. We constrain the focal plane to be a number between 0 and 1 (not included), where the closer to 0 means refocusing closer to the camera and closer to 1 means refocusing further away from the camera. The code will generate a series of images refocused at different plane each `fstep` (so if `-fpmin=0.1` and `-fstep=0.1`, it will generate one image at 0.1, one at 0.2, and so on, until `fpmax`..).
 `spl` is, as in the view rendering, the number of samples to be used. A higher number would result in a larger image, a lower number in a lower resolution image.
 
-### Visualization: just visualize it in 3D (visualize3D.py)
+### (BETA) Disparity from the focal stack (disparity_focal_stack.py)
 
-**DISCLAIMER:** This script is not reprojecting the disparity into the depth and creating a pointcloud, is just pulling it and visualizing in 3D (like if you would call the `mesh` function in Matlab). It is intended only as a visualization tool to look at the disparity and to save them as .ply files. 
-Ply files can be opened with Open-Source free Softwares like Meshlab or CloudCompare.
-Code for the 3D reconstruction to create pointclouds is coming, but not finished - please have patience (or DIY and contribute!)
-
-3D Visualization					|  3D Visualization					|
+It uses a similar strategy (with respect to the main disparity algorithm) and creates a cost volume from the focal stack. It is in development, unfinished, yet it works and we have first results.
+dff
+Image				|  Disparity from 				|
 :-------------------------:|:-------------------------:|
-![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/visualize3D_1.png)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/visualize3D_2.png) |  
+![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/dff/img.png)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/dff/focus_disp_col.png) |  
 
-Parameters for the above images: `S=15`
+Parameters for the above images: `FILTER='bilateral'`, `FOCUS_MEASURE='diff'` and `WIN_SIZE=3`
 
 Example run:
 
-`python3 visualize3D.py  ~/path_to_the___parameters.json -spl S`
+`python3 disparity_focal_stack.py ~/path_to_the___parameters.json --post -filt FILTER --sgm -focus FOCUS_MEASURE -ffw WIN_SIZE --savecolor --show
+`
 
-The script just takes the disparity values and creates a .ply file where each point is written as x,y,disparity,r,g,b. This allows for an easier visualization
+Parameters:
+`--pre` enables pre-processing on focal stack slice (color images)
+`--post` enables post-processing on disparity map
+`-filt` chooses the cost volume filtering method (applied on each slice of the cost)
+`--sgm` enables semi-global matching to refine the cost volume
+`-focus` chooses the focus measure to calculate each slice of the cost volume
+`--savecolor` saves a copy with the jet colormap
+`--show` shows an image of the results (they are anyway saved)
+`-ffw` regulates the window size of the filter in the focus measure
+
+It takes as input the focal stack created with the above script, computes a disparity and then merge it with the one computed from the stereo matching to have more robust final estimation.
 
