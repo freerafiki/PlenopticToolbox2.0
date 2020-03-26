@@ -45,10 +45,10 @@ Those scripts may be useful if you need to compare two disparity maps that looks
 
 Example run: (render_and_visualize3D.py)
 
-`python3 visualize3D.py  ~/path_to_the___parameters.json -spl S`
+`python3 render_and_visualize3D.py  ~/path_to_the___parameters.json -spl S`
 
 Example run: (visualize_disp3D.py)
 
-`python3 visualize3D.py  path_to_the_color_image.png path_to_the_disp.png scaling`
+`python3 visualize_disp3D.py  path_to_the_color_image.png path_to_the_disp.png scaling`
 
 
