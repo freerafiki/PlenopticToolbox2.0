@@ -12,9 +12,8 @@ Samples to do stuff are [here](https://github.com/PlenopticToolbox/PlenopticTool
 
 White Mask              |  Lens Type Mask
 :-------------------------:|:-------------------------:
-![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/vis/mask.png)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/vis/lens_types_mask.png)
+![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/vis/mask.png)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/vis/lt_mask.png)
 RGB with Mask            |  Disp with Mask
-:-------------------------:|:-------------------------:
 ![Input Image](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/vis/rgb_m.jpg)  |  ![](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/vis/disp_m.jpg)
 
 Here you can see the masks - white and lens types could even be useful - color and disp maybe if you are interested in the behaviour of a particular type of lens. 
