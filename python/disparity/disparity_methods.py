@@ -833,10 +833,10 @@ def regularize_coarse(lenses, coarse_costs, disparities, penalty1=0.08, penalty2
     for lcoord in lenses:
         intensity_grid[lcoord] = np.mean(lenses[lcoord].img[lenses[lcoord].mask > 0])
 
-    sgm_cost = rtxhsgm.hex_sgm(coarse_costs, intensity_grid, penalty1, penalty2, max_cost=max_cost)
+    sgm_cost = rtxsgm.hex_sgm(coarse_costs, intensity_grid, penalty1, penalty2, max_cost=max_cost)
     
     for lcoord in sgm_cost:
-        coarse_disp[lcoord], _ = rtxdepth.cost_minimum_interp(sgm_cost[lcoord], disparities)
+        coarse_disp[lcoord], _ = rtxdisp.cost_minimum_interp(sgm_cost[lcoord], disparities)
     return coarse_disp
 
 def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, conf_tec='mlm', conf_sigma=0.3, min_thresh=2.0, eps=0.0000001):
