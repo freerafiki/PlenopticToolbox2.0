@@ -120,10 +120,10 @@ if __name__ == "__main__":
         disp_directory = views_directory + 'Disps/'
         if not os.path.exists(disp_directory):
             os.makedirs(disp_directory)
-    x_left = - np.floor(number_of_horizontal_views / 2).astype(int);
-    x_right = np.ceil(number_of_horizontal_views / 2).astype(int);
-    y_bottom = - np.floor(number_of_vertical_views / 2).astype(int);
-    y_top = np.ceil(number_of_vertical_views / 2).astype(int);
+    x_left = - np.floor(number_of_horizontal_views / 2).astype(int)
+    x_right = np.ceil(number_of_horizontal_views / 2).astype(int)
+    y_bottom = - np.floor(number_of_vertical_views / 2).astype(int)
+    y_top = np.ceil(number_of_vertical_views / 2).astype(int)
     views_position = np.zeros(((y_top-y_bottom),(x_right-x_left),2))
 
     raw_images, interp_images, calibs = xmlio.load_raw_and_interp(args.colorimage_path, args.disp_path, args.config_path)
