@@ -1,4 +1,3 @@
-
 import numpy as np
 import pdb
 #import cv2
@@ -29,18 +28,18 @@ def render_lens_imgs(lenses, lens_imgs, img_shape=None):
 
     img:    array like
             Two-dimensional array containing the microlens depth image
-            
+
     """
 
     assert len(lenses) == len(lens_imgs), "Number of lenses do not coincide"
     assert len(lenses) > 0, "0 lenses supplied"
-    
+
     first_lens = lenses[0, 0]
 
     # ensure that the center lens is at the image origin
     if img_shape is None:
         img_shape = ((first_lens.pcoord) * 2 + 1).astype(int)
-    
+
     # check if it is a colored image or a one-channel gray/disparity image
     if len(lens_imgs[0,0].shape) == 3:
         hl, wl, c = lens_imgs[0,0].shape
@@ -55,24 +54,24 @@ def render_lens_imgs(lenses, lens_imgs, img_shape=None):
 
     XX, YY = np.meshgrid(x, x)
     ind = np.where(XX**2 + YY**2 < first_lens.inner_radius**2)
-    
+
     # micro image, so it takes the shape of first_lens.col_img_shape
-    
+
     if len(lens_imgs[0,0].shape) == 3:
         img = np.zeros((img_shape[0], img_shape[1], c))
     else:
         img = np.zeros((img_shape))
-     
+
     #img = np.zeros((lens_imgs[0,0].shape))
-    
+
     for key in lenses:
-        
+
         data = np.asarray(lens_imgs[key])
 
         lens = lenses[key]
         ty = (YY + lens.pcoord[0] + 0.5).astype(int)
         tx = (XX + lens.pcoord[1] + 0.5).astype(int)
-        
+
         # ensure that the subimg is located within the image bounds
         if np.any(ty < 0) or np.any(tx < 0) or np.any(ty >= img_shape[0]) or np.any(tx >= img_shape[1]):
             continue
@@ -81,11 +80,11 @@ def render_lens_imgs(lenses, lens_imgs, img_shape=None):
             img[(ty[ind], tx[ind])] = data[ind]
         else:
             img[(ty[ind], tx[ind])] = data
-    
 
-    
+
+
     return img
-    
+
 def render_cropped_img(lenses, lens_imgs, x1, y1, x2, y2):
 
     """
@@ -106,12 +105,12 @@ def render_cropped_img(lenses, lens_imgs, x1, y1, x2, y2):
 
     img:    array like
             Two-dimensional array containing the microlens depth image
-            
+
     """
 
     assert len(lenses) == len(lens_imgs), "Number of lenses do not coincide"
     assert len(lenses) > 0, "0 lenses supplied"
-    
+
     first_lens = lenses[0, 0]
     central_img = lens_imgs[0,0]
 
@@ -133,15 +132,15 @@ def render_cropped_img(lenses, lens_imgs, x1, y1, x2, y2):
 
     XX, YY = np.meshgrid(x, x)
     ind = np.where(XX**2 + YY**2 < first_lens.inner_radius**2)
-    
+
     # micro image, so it takes the shape of first_lens.col_img_shape
     if len(central_img.shape) == 3:
         img = np.zeros((img_shape[0], img_shape[1], c))
     else:
         img = np.zeros((img_shape))
-    
+
     for key in lenses:
-        
+
         #pdb.set_trace()
         data = np.asarray(lens_imgs[key])
         #l_type = ((-key[0] % 3) +key[1]) % 3
@@ -149,7 +148,7 @@ def render_cropped_img(lenses, lens_imgs, x1, y1, x2, y2):
         lens = lenses[key]
         ty = (YY + lens.pcoord[0] + 0.5).astype(int)
         tx = (XX + lens.pcoord[1] + 0.5).astype(int)
-        
+
         # ensure that the subimg is located within the image bounds
         if np.any(ty < 0) or np.any(tx < 0) or np.any(ty >= img_shape[0]) or np.any(tx >= img_shape[1]):
             continue
@@ -158,14 +157,14 @@ def render_cropped_img(lenses, lens_imgs, x1, y1, x2, y2):
             img[(ty[ind], tx[ind])] = data[ind]
         else:
             img[(ty[ind], tx[ind])] = data
-    
 
-    
+
+
     return img
-        
+
 
 def get_patch_size_fine(disp_img, min_d, max_d, max_ps, isReal=True, layers=3):
-    
+
     disparray = np.asarray(disp_img)
     mean_d = np.mean(disparray)
     std_d = np.std(disparray)
@@ -180,16 +179,16 @@ def get_patch_size_fine(disp_img, min_d, max_d, max_ps, isReal=True, layers=3):
         for i in range(layers):
             if mean_d > min_d + step * i:
                 ps -= 1
-    
+
     return max(ps, 0)
 
 
 """
-The idea is that if we can find the right parameters, the patch size should be 
+The idea is that if we can find the right parameters, the patch size should be
 consistent across images.
-We know that if we have the diameter of the lens, the disparity can reach 
+We know that if we have the diameter of the lens, the disparity can reach
 up to almost half of it, and minimum will be close to zero.
-We also know that if for example disparity is close to zero, the patch size have to be really small 
+We also know that if for example disparity is close to zero, the patch size have to be really small
 If disparity would be zero (focal plane case) then 1 pixel would be enough.
 If disparity would be half of the lens diameter, the patch size should be close to half of the half of the diameters
 so something like half o the disparity.
@@ -199,7 +198,7 @@ Also note that the patch size has to be odd (because of having one central pixel
 Later we can use a radius and select circular patches and then we have more levels
 """
 def get_patch_size_absolute(disp_img, lens_diameter, isReal=True):
-    
+
     min_ps = 1
     max_ps = np.floor(lens_diameter / 2)
     if max_ps % 2 == 0:
@@ -208,7 +207,7 @@ def get_patch_size_absolute(disp_img, lens_diameter, isReal=True):
     disparray = np.asarray(disp_img)
     mean_d = np.mean(disparray) * max_ps
     ps = np.ceil(mean_d * 0.5).astype(int)
-    
+
     if ps < 1:
         ps = 1
 
@@ -217,7 +216,7 @@ def get_patch_size_absolute(disp_img, lens_diameter, isReal=True):
     return ps
 
 def get_patch_size_absolute_focused_lenses(disp_img, lens_diameter, isReal=True):
-    
+
     min_ps = 5
     max_ps = np.floor(lens_diameter / 2)
     if max_ps % 2 == 0:
@@ -227,7 +226,7 @@ def get_patch_size_absolute_focused_lenses(disp_img, lens_diameter, isReal=True)
     mean_d = np.mean(disparray) * max_ps
     ps = np.round(max_ps * 0.4).astype(int)
     #ps = np.round(max_ps - (mean_d)).astype(int)
-    
+
     if ps < 1:
         ps = 1
 
@@ -244,12 +243,12 @@ or total focus also, depending on the use of the actual disparity
 October 2018
 """
 def refocused_using_patches(lenses, col_data, disp_data, min_disp, max_disp, max_ps=5, layers = 4, isReal=True, imgname=None):
-   
+
     if disp_data is None:
         # refocusing!
         # not ready yet
         return None
-    
+
     # we set the patch image to be one fourth of the original, if not otherwise specified
     factor = 4 # if changing this the final resolution will change
     central_lens = lenses[0,0]
@@ -263,42 +262,42 @@ def refocused_using_patches(lenses, col_data, disp_data, min_disp, max_disp, max
     n = (hl - 1) / 2.0
     x = np.linspace(-n, n, hl)
     XX, YY = np.meshgrid(x, x)
-    ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c)) 
-    disp_ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c))
+    disp_ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     if c == 4:
         ref_img[:,:,3] = 1 # alpha channel
-    count = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    psimg = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    count = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    psimg = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     actual_size = round(hl / factor)
     if actual_size % 2 == 0:
         actual_size += 1
     dim = (actual_size, actual_size)
     hw = int(np.floor(actual_size/2))
     for key in lenses:
-    
+
         lens = lenses[key]
         current_img = np.asarray(col_data[key])
         current_disp = np.asarray(disp_data[key])
         ps = get_patch_size_fine(current_disp, min_disp, max_disp, max_ps, isReal, layers)
         cen_y, cen_x = int(round(lens.pcoord[0])), int(round(lens.pcoord[1]))
         ptc_y, ptc_x = int(cen_y / factor), int(cen_x / factor)
-        if min(ptc_y, ptc_x) > max_ps and ptc_y < (ref_img.shape[0]-max_ps) and ptc_x < (ref_img.shape[1]-max_ps):       
+        if min(ptc_y, ptc_x) > max_ps and ptc_y < (ref_img.shape[0]-max_ps) and ptc_x < (ref_img.shape[1]-max_ps):
             color_img = current_img[cen-ps:cen+ps+1, cen-ps:cen+ps+1] # patch size!
             disp_simg = current_disp[cen-ps:cen+ps+1, cen-ps:cen+ps+1]
             img_big = cv2.resize(color_img, dim, interpolation = cv2.INTER_LINEAR)
-            disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR) 
+            disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR)
             count[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += 1
             psimg[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] = ps
             ref_img[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1, 0:3] += img_big[:,:,0:3]
             disp_ref_img[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += disp_big
-    
+
     ref_img_fnl = np.ones_like(ref_img)
     disp_ref_img_fnl = np.ones_like(disp_ref_img)
     for j in range(0,3):
-        ref_img_fnl[:,:,j] = ref_img[:,:,j] / count 
-    disp_ref_img_fnl = disp_ref_img / count       
-        
-    return ref_img_fnl, disp_ref_img_fnl, psimg   
+        ref_img_fnl[:,:,j] = ref_img[:,:,j] / count
+    disp_ref_img_fnl = disp_ref_img / count
+
+    return ref_img_fnl, disp_ref_img_fnl, psimg
 
 
 def rgb2gray(rgb):
@@ -314,12 +313,12 @@ February 2019
 
 """
 def generate_a_perspective_view(lenses, col_data, disp_data, min_disp, max_disp, x_shift=0, y_shift=0, cutBorders=True, isReal=True, imgname=None):
-   
+
     if disp_data is None:
         # refocusing!
         # not ready yet
         return None
-    
+
 
 
     # we set the patch image to be one fourth of the original, if not otherwise specified
@@ -336,19 +335,19 @@ def generate_a_perspective_view(lenses, col_data, disp_data, min_disp, max_disp,
     n = (hl - 1) / 2.0
     x = np.linspace(-n, n, hl)
     XX, YY = np.meshgrid(x, x)
-    ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c)) 
-    disp_ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c))
+    disp_ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     if c == 4:
         ref_img[:,:,3] = 1 # alpha channel
-    count = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    psimg = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    count = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    psimg = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     actual_size = round(hl / factor)
     if actual_size % 2 == 0:
         actual_size += 1
     dim = (actual_size, actual_size)
     hw = int(np.floor(actual_size/2))
     for key in lenses:
-        
+
         #pdb.set_trace()
         lens = lenses[key]
         current_img = np.asarray(col_data[key])
@@ -356,7 +355,7 @@ def generate_a_perspective_view(lenses, col_data, disp_data, min_disp, max_disp,
         ps = get_patch_size_absolute(current_disp, lens.diameter, isReal)
         cen_y, cen_x = int(round(lens.pcoord[0])), int(round(lens.pcoord[1]))
         ptc_y, ptc_x = int(cen_y / factor), int(cen_x / factor)
-        if min(ptc_y, ptc_x) > max_ps and ptc_y < (ref_img.shape[0]-max_ps) and ptc_x < (ref_img.shape[1]-max_ps):       
+        if min(ptc_y, ptc_x) > max_ps and ptc_y < (ref_img.shape[0]-max_ps) and ptc_x < (ref_img.shape[1]-max_ps):
             color_img = current_img[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift] # patch size!
             disp_simg = current_disp[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift]
             #pdb.set_trace()
@@ -364,23 +363,23 @@ def generate_a_perspective_view(lenses, col_data, disp_data, min_disp, max_disp,
             #test_img = current_img[cen-ps:cen+ps+1, cen-ps:cen+ps+1]
             #print("size without shift {0}".format(test_img.shape))
             img_big = cv2.resize(color_img, dim, interpolation = cv2.INTER_LINEAR)
-            disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR) 
+            disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR)
             count[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += 1
             psimg[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] = ps #color_img.shape[0] * color_img.shape[1]
             ref_img[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1, 0:3] += img_big[:,:,0:3]
             disp_ref_img[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += disp_big
-    
+
     ref_img_fnl = np.ones_like(ref_img)
     disp_ref_img_fnl = np.ones_like(disp_ref_img)
     count[(count == 0)] = 1
 
     for j in range(0,3):
-        ref_img_fnl[:,:,j] = ref_img[:,:,j] / count 
-    disp_ref_img_fnl = disp_ref_img / count   
+        ref_img_fnl[:,:,j] = ref_img[:,:,j] / count
+    disp_ref_img_fnl = disp_ref_img / count
 
     ref_img_fnl[np.isnan(ref_img_fnl)] = 0
-    disp_ref_img_fnl[np.isnan(disp_ref_img_fnl)] = 0   
-    
+    disp_ref_img_fnl[np.isnan(disp_ref_img_fnl)] = 0
+
     if cutBorders is True:
 
         paddingToAvoidBorders = int(max_ps + 1)
@@ -391,7 +390,7 @@ def generate_a_perspective_view(lenses, col_data, disp_data, min_disp, max_disp,
     return ref_img_fnl, disp_ref_img_fnl, psimg
 
 
-### It just generates three images (usually colored image, disparity and confidence 
+### It just generates three images (usually colored image, disparity and confidence
 ### but can be used with whatever is loaded with load_triplet)
 def generate_a_perspective_view_triplet(lenses, x_shift=0, y_shift=0, cutBorders=True, isReal=True, imgname=None):
 
@@ -409,20 +408,20 @@ def generate_a_perspective_view_triplet(lenses, x_shift=0, y_shift=0, cutBorders
     n = (hl - 1) / 2.0
     x = np.linspace(-n, n, hl)
     XX, YY = np.meshgrid(x, x)
-    ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c)) 
+    ref_img = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c))
     # we assume they don't have colors! (usually disp and confidence do not have channels..)
-    ref_disp = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    ref_conf = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    ref_disp = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    ref_conf = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     if c == 4:
         ref_img[:,:,3] = 1 # alpha channel
-    count = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    count = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     actual_size = round(hl / factor)
     if actual_size % 2 == 0:
         actual_size += 1
     dim = (actual_size, actual_size)
     hw = int(np.floor(actual_size/2))
     for key in lenses:
-        
+
         #pdb.set_trace()
         lens = lenses[key]
         current_img = np.asarray(lens.col_img)
@@ -431,7 +430,7 @@ def generate_a_perspective_view_triplet(lenses, x_shift=0, y_shift=0, cutBorders
         ps = get_patch_size_absolute(current_disp, lens.diameter, isReal)
         cen_y, cen_x = int(round(lens.pcoord[0])), int(round(lens.pcoord[1]))
         ptc_y, ptc_x = int(cen_y / factor), int(cen_x / factor)
-        if min(ptc_y, ptc_x) > max_ps and ptc_y < (ref_img.shape[0]-max_ps) and ptc_x < (ref_img.shape[1]-max_ps):       
+        if min(ptc_y, ptc_x) > max_ps and ptc_y < (ref_img.shape[0]-max_ps) and ptc_x < (ref_img.shape[1]-max_ps):
             color_img = current_img[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift] # patch size!
             disp_simg = current_disp[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift]
             conf_simg = current_conf[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift]#pdb.set_trace()
@@ -439,26 +438,26 @@ def generate_a_perspective_view_triplet(lenses, x_shift=0, y_shift=0, cutBorders
             #test_img = current_img[cen-ps:cen+ps+1, cen-ps:cen+ps+1]
             #print("size without shift {0}".format(test_img.shape))
             img_big = cv2.resize(color_img, dim, interpolation = cv2.INTER_LINEAR)
-            disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR) 
-            conf_big = cv2.resize(conf_simg, dim, interpolation = cv2.INTER_LINEAR) 
+            disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR)
+            conf_big = cv2.resize(conf_simg, dim, interpolation = cv2.INTER_LINEAR)
             count[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += 1
             ref_img[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1, 0:3] += img_big[:,:,0:3]
             ref_disp[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += disp_big
             ref_conf[ptc_y-hw:ptc_y+hw+1, ptc_x-hw:ptc_x+hw+1] += conf_big
-    
+
     ref_img_fnl = np.ones_like(ref_img)
     #disp_ref_img_fnl = np.ones_like(disp_ref_img)
     count[(count == 0)] = 1
 
     for j in range(0,3):
-        ref_img_fnl[:,:,j] = ref_img[:,:,j] / count 
-    disp_ref_img_fnl = ref_disp / count   
-    conf_ref_img_fnl = ref_conf / count  
+        ref_img_fnl[:,:,j] = ref_img[:,:,j] / count
+    disp_ref_img_fnl = ref_disp / count
+    conf_ref_img_fnl = ref_conf / count
 
     ref_img_fnl[np.isnan(ref_img_fnl)] = 0
-    disp_ref_img_fnl[np.isnan(disp_ref_img_fnl)] = 0  
-    conf_ref_img_fnl[np.isnan(conf_ref_img_fnl)] = 0    
-    
+    disp_ref_img_fnl[np.isnan(disp_ref_img_fnl)] = 0
+    conf_ref_img_fnl[np.isnan(conf_ref_img_fnl)] = 0
+
     if cutBorders is True:
 
         paddingToAvoidBorders = int(max_ps + 1)
@@ -473,7 +472,7 @@ def generate_a_perspective_view_triplet(lenses, x_shift=0, y_shift=0, cutBorders
 Createas a view using only micro-lenses that are on focus
 doing so, spatial resolution is reduced but also blur and artifacts.
 
-It first creates three images using only one lens type, then pick the part of 
+It first creates three images using only one lens type, then pick the part of
 those images that are in focus and merge them together using a weighted average
 
 the idea is that by averaging them together you reduce artifacts (in shiny parts and edges)
@@ -485,7 +484,7 @@ February 2019
 """
 
 def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=False, x_shift=0, y_shift=0, patch_shape=0, cutBorders=True, isReal=True, imgname=None):
-   
+
     # bilateral filter
 
     triplet = [[12, 5, 7], [10, 7, 9], [8, 11, 13], [6, 13, 15], [4, 15, 17]]
@@ -503,26 +502,26 @@ def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=F
         hl, wl = central_lens.img.shape
         c = 1
     max_ps = np.floor(central_lens.diameter / 2)
-    img_lens_type0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c)) 
-    img_lens_type1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c)) 
-    img_lens_type2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c)) 
+    img_lens_type0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c))
+    img_lens_type1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c))
+    img_lens_type2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c))
     if c == 4:
         img_lens_type0[:,:,3] = 1 # alpha channel
         img_lens_type1[:,:,3] = 1 # alpha channel
         img_lens_type2[:,:,3] = 1 # alpha channel
-    disp_lens_type0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    disp_lens_type1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    disp_lens_type2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+    disp_lens_type0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    disp_lens_type1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    disp_lens_type2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     if no_conf == False:
-        conf_lens_type0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-        conf_lens_type1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-        conf_lens_type2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    count0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    count1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    count2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    psimg0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    psimg1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
-    psimg2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor))) 
+        conf_lens_type0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+        conf_lens_type1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+        conf_lens_type2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    count0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    count1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    count2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    psimg0 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    psimg1 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
+    psimg2 = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor)))
     actual_size_x = triplet[chosen][1] #15
     actual_size_y = triplet[chosen][2] #round(hl / factor) + 4
     if actual_size_x % 2 == 0:
@@ -545,7 +544,7 @@ def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=F
 
     # loop and create three images!
     for key in lenses:
-        
+
         #pdb.set_trace()
         lens = lenses[key]
         current_img = np.asarray(col_data[key])
@@ -555,7 +554,7 @@ def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=F
         ps = get_patch_size_absolute_focused_lenses(current_disp, lens.diameter, isReal)
         cen_y, cen_x = int(np.round(lens.pcoord[0])), int(np.floor(lens.pcoord[1]))
         ptc_y, ptc_x = int(cen_y / factor), int(cen_x / factor)
-        if min(ptc_y, ptc_x) > max_ps and ptc_y < (img_lens_type0.shape[0]-max_ps) and ptc_x < (img_lens_type0.shape[1]-max_ps):       
+        if min(ptc_y, ptc_x) > max_ps and ptc_y < (img_lens_type0.shape[0]-max_ps) and ptc_x < (img_lens_type0.shape[1]-max_ps):
             color_img = current_img[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift] # patch size!
             disp_simg = current_disp[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift]
             if no_conf == False:
@@ -564,7 +563,7 @@ def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=F
             disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR) * mask
             if no_conf == False:
                 conf_big = cv2.resize(conf_img, dim, interpolation = cv2.INTER_LINEAR) * mask
-            
+
             if lens.focal_type == 0:
                 count0[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1] += mask
                 psimg0[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1] = mask * ps#color_img.shape[0] * color_img.shape[1]
@@ -586,7 +585,7 @@ def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=F
                 disp_lens_type2[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1] += disp_big
                 if no_conf == False:
                     conf_lens_type2[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1] += conf_big
-    
+
     # Here I should average the three images, but first get them right
     # yes, terribly written, but is temporary I hope
     img_lens_type0_fnl = np.ones_like(img_lens_type0)
@@ -608,26 +607,26 @@ def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=F
         img_lens_type1_fnl[:,:,j] = img_lens_type1[:,:,j] / count1
         img_lens_type2_fnl[:,:,j] = img_lens_type2[:,:,j] / count2
     disp_lens_type0_fnl = disp_lens_type0 / count0
-    disp_lens_type1_fnl = disp_lens_type1 / count1   
-    disp_lens_type2_fnl = disp_lens_type2 / count2   
+    disp_lens_type1_fnl = disp_lens_type1 / count1
+    disp_lens_type2_fnl = disp_lens_type2 / count2
     if no_conf == False:
         conf_lens_type0_fnl = conf_lens_type0 / count0
-        conf_lens_type1_fnl = conf_lens_type1 / count1   
-        conf_lens_type2_fnl = conf_lens_type2 / count2 
+        conf_lens_type1_fnl = conf_lens_type1 / count1
+        conf_lens_type2_fnl = conf_lens_type2 / count2
 
     img_lens_type0_fnl[np.isnan(img_lens_type0_fnl)] = 0
     img_lens_type1_fnl[np.isnan(img_lens_type1_fnl)] = 0
     img_lens_type2_fnl[np.isnan(img_lens_type2_fnl)] = 0
-    disp_lens_type0_fnl[np.isnan(disp_lens_type0_fnl)] = 0 
-    disp_lens_type1_fnl[np.isnan(disp_lens_type1_fnl)] = 0 
-    disp_lens_type2_fnl[np.isnan(disp_lens_type2_fnl)] = 0 
+    disp_lens_type0_fnl[np.isnan(disp_lens_type0_fnl)] = 0
+    disp_lens_type1_fnl[np.isnan(disp_lens_type1_fnl)] = 0
+    disp_lens_type2_fnl[np.isnan(disp_lens_type2_fnl)] = 0
     if no_conf == False:
-        conf_lens_type0_fnl[np.isnan(disp_lens_type0_fnl)] = 0 
-        conf_lens_type1_fnl[np.isnan(disp_lens_type1_fnl)] = 0 
-        conf_lens_type2_fnl[np.isnan(disp_lens_type2_fnl)] = 0 
+        conf_lens_type0_fnl[np.isnan(disp_lens_type0_fnl)] = 0
+        conf_lens_type1_fnl[np.isnan(disp_lens_type1_fnl)] = 0
+        conf_lens_type2_fnl[np.isnan(disp_lens_type2_fnl)] = 0
 
     # select disparity
-    avg_disp = (disp_lens_type0_fnl + disp_lens_type1_fnl + disp_lens_type2_fnl) / 3 
+    avg_disp = (disp_lens_type0_fnl + disp_lens_type1_fnl + disp_lens_type2_fnl) / 3
 
     # divide areas
     # lens type 0 --> 1 to 3 virtual depth --> disparity > 0.6
@@ -644,13 +643,13 @@ def generate_view_focused_micro_lenses(lenses, min_disp=0, max_disp=0, no_conf=F
 
     all_in_focus_image = (img_lens_type0_fnl * np.dstack((weights[:,:,0], weights[:,:,0], weights[:,:,0], weights[:,:,3])) + \
         img_lens_type1_fnl * np.dstack((weights[:,:,1], weights[:,:,1], weights[:,:,1], weights[:,:,3])) + \
-        img_lens_type2_fnl * np.dstack((weights[:,:,2], weights[:,:,2], weights[:,:,2], weights[:,:,3])) ) 
+        img_lens_type2_fnl * np.dstack((weights[:,:,2], weights[:,:,2], weights[:,:,2], weights[:,:,3])) )
 
     all_in_focus_image[:,:,3] = 1
 
-    final_disp_img = (disp_lens_type0_fnl * weights[:,:,0] + disp_lens_type1_fnl * weights[:,:,1] + disp_lens_type2_fnl * weights[:,:,2] ) 
+    final_disp_img = (disp_lens_type0_fnl * weights[:,:,0] + disp_lens_type1_fnl * weights[:,:,1] + disp_lens_type2_fnl * weights[:,:,2] )
     if no_conf == False:
-        final_conf_img = (conf_lens_type0_fnl * weights[:,:,0] + conf_lens_type1_fnl * weights[:,:,1] + conf_lens_type2_fnl * weights[:,:,2] ) 
+        final_conf_img = (conf_lens_type0_fnl * weights[:,:,0] + conf_lens_type1_fnl * weights[:,:,1] + conf_lens_type2_fnl * weights[:,:,2] )
     else:
         final_conf_img = np.zeros_like(final_disp_img)
     avg_ps = (psimg0 + psimg1 + psimg2 ) / 3
@@ -678,7 +677,7 @@ adding filters in the end
 April 2019
 """
 def generate_view_focused_micro_lenses_v2(lenses, no_conf=False, x_shift=0, y_shift=0, patch_shape=0, cutBorders=True, isReal=True, imgname=None, chosen=3):
-   
+
     # patch shapes
     # they should be related to the microlens image size (these numbers were good for R29)
     triplet = [[12, 5, 7], [10, 7, 9], [8, 11, 13], [6, 13, 15], [4, 15, 17]]
@@ -705,17 +704,17 @@ def generate_view_focused_micro_lenses_v2(lenses, no_conf=False, x_shift=0, y_sh
     max_ps = np.floor(central_lens.diameter / 2)
 
     # WE USE 3 DIMENSIONAL STRUCTURES
-    # They basically are layer of images (with color channels, or with one value for disparity and confidence). 
+    # They basically are layer of images (with color channels, or with one value for disparity and confidence).
     # Each layer has information from one lens type
-    rendered_colors = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c, lens_types)) 
+    rendered_colors = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), c, lens_types))
     if c == 4:
         rendered_colors[:,:,3,:] = 1 # alpha channel
-    rendered_disps = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types)) 
+    rendered_disps = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types))
     if no_conf == False:
-        rendered_confidences = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types)) 
+        rendered_confidences = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types))
 
-    counters = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types)) 
-    patch_sizes = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types)) 
+    counters = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types))
+    patch_sizes = np.zeros((int(img_shape[0]/factor), int(img_shape[1]/factor), lens_types))
 
     # actual size of the patches in the rendered image
     actual_size_x = triplet[chosen][1] #15
@@ -745,7 +744,7 @@ def generate_view_focused_micro_lenses_v2(lenses, no_conf=False, x_shift=0, y_sh
 
     # loop and create three images!
     for key in lenses:
-        
+
         #pdb.set_trace()
         lens = lenses[key]
         current_img = np.asarray(lenses[key].col_img)
@@ -756,7 +755,7 @@ def generate_view_focused_micro_lenses_v2(lenses, no_conf=False, x_shift=0, y_sh
         #print(ps)
         cen_y, cen_x = int(np.round(lens.pcoord[0])), int(np.floor(lens.pcoord[1]))
         ptc_y, ptc_x = int(cen_y / factor), int(cen_x / factor)
-        if min(ptc_y, ptc_x) > max_ps and ptc_y < (rendered_colors.shape[0]-max_ps) and ptc_x < (rendered_colors.shape[1]-max_ps):       
+        if min(ptc_y, ptc_x) > max_ps and ptc_y < (rendered_colors.shape[0]-max_ps) and ptc_x < (rendered_colors.shape[1]-max_ps):
             #pdb.set_trace()
             color_img = current_img[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift] # patch size!
             disp_simg = current_disp[cen-ps+y_shift:cen+ps+1+y_shift, cen-ps+x_shift:cen+ps+1+x_shift]
@@ -766,7 +765,7 @@ def generate_view_focused_micro_lenses_v2(lenses, no_conf=False, x_shift=0, y_sh
             disp_big = cv2.resize(disp_simg, dim, interpolation = cv2.INTER_LINEAR) * mask
             if no_conf == False:
                 conf_big = cv2.resize(conf_img, dim, interpolation = cv2.INTER_LINEAR) * mask
-            
+
             # using lens.focal_type we fill only one of the three layers each time
             rendered_colors[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1,0:3, lens.focal_type] += img_big[:,:,0:3]
             rendered_disps[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1, lens.focal_type] += disp_big
@@ -774,7 +773,7 @@ def generate_view_focused_micro_lenses_v2(lenses, no_conf=False, x_shift=0, y_sh
             patch_sizes[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1, lens.focal_type] = mask * ps
             if no_conf == False:
                 rendered_confidences[ptc_y-hw_y:ptc_y+hw_y+1, ptc_x-hw_x:ptc_x+hw_x+1, lens.focal_type] += conf_big
-    
+
     counters[(counters == 0)] = 1
 
     #pdb.set_trace()
@@ -877,17 +876,17 @@ def get_sampling_distance(disp, calib, sam_per_lens):
 
 
 def _hex_focal_type(c):
-    
+
     """
     Calculates the focal type for the three lens hexagonal grid
     """
 
     focal_type = ((-c[0] % 3) + c[1]) % 3
 
-    return focal_type 
+    return focal_type
 
 def render_interp_img(imgs, interps, calibs, shiftx, shifty, cut_borders):
-    
+
     img = imgs[0]
     disp = imgs[1]
 
@@ -895,20 +894,20 @@ def render_interp_img(imgs, interps, calibs, shiftx, shifty, cut_borders):
     data_interp_g = interps[1]
     data_interp_b = interps[2]
     disp_interp = interps[3]
-    
+
     # view
     img_shape = np.asarray(img.shape[0:2])
     calib = calibs[0]
     coords = calibs[1]
     local_grid = calibs[2]
 
-    # resolution should be correlated with number of lenses more than 
+    # resolution should be correlated with number of lenses more than
     # number of pixels
     #pdb.set_trace()
     # sample per lens
     sam_per_lens = 11
     hs = np.floor(sam_per_lens/2).astype(int)
-    
+
     #[ny * sam_per_lens, nx * sam_per_lens]
     #pdb.set_trace()
     reducing_factor = (calib.lens_diameter / sam_per_lens)
@@ -921,7 +920,7 @@ def render_interp_img(imgs, interps, calibs, shiftx, shifty, cut_borders):
     # xx, yy = local_grid.xx, local_grid.yy
     # mask = np.zeros_like(local_grid.xx)
     # mask[xx**2 + yy**2 < calib.inner_lens_radius**2] = 1
-    #plt.ion()   
+    #plt.ion()
     for lc in coords:
 
         # pixel coordinates
@@ -954,7 +953,7 @@ def render_interp_img(imgs, interps, calibs, shiftx, shifty, cut_borders):
             interp_patch_b = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,2])
             sampling_pattern_for_patch_y = np.arange((intPCy-coords_resized[0]), (intPCy-coords_resized[0]+sam_per_lens), 1)
             sampling_pattern_for_patch_x = np.arange((intPCx-coords_resized[1]), (intPCx-coords_resized[1]+sam_per_lens), 1)
-            
+
             r_channel = interp_patch_r(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             g_channel = interp_patch_g(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             b_channel = interp_patch_b(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
@@ -976,7 +975,7 @@ def render_interp_img(imgs, interps, calibs, shiftx, shifty, cut_borders):
             rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:] = rgb_interp_patch_img
             # rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,1] = interp_patch_g(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             # rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,2] = interp_patch_b(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
-    
+
     rnd_img = np.clip(rnd_img, 0, 1)
     if cut_borders:
         rnd_img = rnd_img[hs:rnd_img.shape[0]-hs, hs:rnd_img.shape[1]-hs,:]
@@ -988,7 +987,7 @@ def render_interp_img(imgs, interps, calibs, shiftx, shifty, cut_borders):
 
 
 def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_lens, cut_borders):
-    
+
     img = imgs[0]
     disp = imgs[1]
 
@@ -996,14 +995,14 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
     data_interp_g = interps[1]
     data_interp_b = interps[2]
     disp_interp = interps[3]
-    
+
     # view
     img_shape = np.asarray(img.shape[0:2])
     calib = calibs[0]
     coords = calibs[1]
     local_grid = calibs[2]
 
-    # resolution should be correlated with number of lenses more than 
+    # resolution should be correlated with number of lenses more than
     # number of pixels
     #pdb.set_trace()
     # sample per lens
@@ -1023,7 +1022,7 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
     # xx, yy = local_grid.xx, local_grid.yy
     # mask = np.zeros_like(local_grid.xx)
     # mask[xx**2 + yy**2 < calib.inner_lens_radius**2] = 1
-    #plt.ion()  
+    #plt.ion()
     for lc in coords:
 
         # pixel coordinates
@@ -1049,7 +1048,7 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
             sampling_pattern = np.arange(-sampling_distance*np.floor(sam_per_lens/2), sampling_distance*np.floor(sam_per_lens/2) + sampling_distance, sampling_distance)
             sampling_pattern_x = sampling_pattern + shiftx
             sampling_pattern_y = sampling_pattern + shifty
-            # extract the patch 
+            # extract the patch
             patch_values = np.dstack((data_interp_r(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                 data_interp_g(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                 data_interp_b(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1])))
@@ -1059,7 +1058,7 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
             interp_patch_r = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,0])
             interp_patch_g = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,1])
             interp_patch_b = sinterp.RectBivariateSpline(range(patch_values.shape[0]), range(patch_values.shape[1]), patch_values[:,:,2])
-            
+
             #create the grid for sampling
             sampling_pattern_for_patch_y = np.arange((intPCy-coords_resized[0]), (intPCy-coords_resized[0]+sam_per_lens), 1)
             sampling_pattern_for_patch_x = np.arange((intPCx-coords_resized[1]), (intPCx-coords_resized[1]+sam_per_lens), 1)
@@ -1074,10 +1073,10 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
             rgb_interp_patch_img = np.clip(rgb_interp_patch_img, 0, np.max(rgb_interp_patch_img))
 
             # fill the images
-            rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:, ft] += rgb_interp_patch_img 
-            rnd_cnt[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3)) 
+            rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:, ft] += rgb_interp_patch_img
+            rnd_cnt[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3))
             coarse_d[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1])) * single_val_disp
-            
+
     img0vals0 = (rnd_cnt[:,:,:,0] == 0).astype(np.uint8)
     img1vals0 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
     img2vals0 = (rnd_cnt[:,:,:,2] == 0).astype(np.uint8)
@@ -1107,7 +1106,7 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
     weights_t0 = 1/lens_types + y_t0 / 3 * 2 - y_t1 / 3 * 1 - y_t2 /3 * 1
     weights_t1 = 1/lens_types - y_t0 / 3 * 1 + y_t1 / 3 * 2 - y_t2 /3 * 1
     weights_t2 = 1/lens_types - y_t0 / 3 * 1 - y_t1 / 3 * 1 + y_t2 /3 * 2
-    
+
     weights = np.zeros_like(rnd0)
     coarse_d_tot = np.clip(coarse_d_tot, 0, 0.99)
     idisp = np.floor(coarse_d_tot / quantization_step).astype(np.uint8)
@@ -1117,7 +1116,7 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
     weights[:,:,2] = weights_t2[idisp]
 
     #pdb.set_trace()
-    
+
     #rnd_tot = rnd0f * weights + rnd1f * weights + rnd2f * weights
     weights0_w3c = np.dstack((weights[:,:,0], weights[:,:,0], weights[:,:,0]))
     weights1_w3c = np.dstack((weights[:,:,1], weights[:,:,1], weights[:,:,1]))
@@ -1125,18 +1124,18 @@ def render_interp_img_focused(imgs, interps, calibs, shiftx, shifty, sam_per_len
     rnd_nof = rnd0 * weights0_w3c + rnd1 * weights1_w3c + rnd2 * weights2_w3c
 
     filt_after = filters.median_filter(rnd_nof, filt_size)
-    
+
     rnd_img_final = np.clip(filt_after, 0, 1)
     padding = hs + np.floor(hs/2).astype(int)
     if cut_borders:
         rnd_img_final = rnd_img_final[padding:rnd_img_final.shape[0]-padding, padding:rnd_img_final.shape[1]-padding,:]
-    
+
     return rnd_img_final, coarse_d_tot
 
 
 ## The interpolated disparity seems to have some small problems
 def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_lens, cut_borders):
-    
+
     img = imgs[0]
     disp = imgs[1]
 
@@ -1144,14 +1143,14 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
     data_interp_g = interps[1]
     data_interp_b = interps[2]
     disp_interp = interps[3]
-    
+
     # view
     img_shape = np.asarray(img.shape[0:2])
     calib = calibs[0]
     coords = calibs[1]
     local_grid = calibs[2]
 
-    # resolution should be correlated with number of lenses more than 
+    # resolution should be correlated with number of lenses more than
     # number of pixels
     #pdb.set_trace()
     # sample per lens
@@ -1159,7 +1158,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
     lens_types = 3
     #[ny * sam_per_lens, nx * sam_per_lens]
     #pdb.set_trace()
-    reducing_factor = (calib.lens_diameter / sam_per_lens) * 2 #* lens_types
+    reducing_factor = (calib.lens_diameter / sam_per_lens) * 2.5 #lens_types
     resolution = np.round(img_shape / reducing_factor).astype(int)
     print("raw image is {}x{}, rendered image will be {}x{}".format(img_shape[0], img_shape[1], resolution[0], resolution[1]))
     rnd_img = np.zeros((resolution[0], resolution[1], 3, lens_types))
@@ -1171,7 +1170,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
     # xx, yy = local_grid.xx, local_grid.yy
     # mask = np.zeros_like(local_grid.xx)
     # mask[xx**2 + yy**2 < calib.inner_lens_radius**2] = 1
-    #plt.ion()   
+    #plt.ion()
     #pdb.set_trace()
     for lc in coords:
 
@@ -1197,7 +1196,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
             sampling_pattern = np.arange(-sampling_distance*sam_per_lens/2, sampling_distance*sam_per_lens/2 + sampling_distance, sampling_distance)
             sampling_pattern_x = sampling_pattern + shiftx
             sampling_pattern_y = sampling_pattern + shifty
-            # extract the patch 
+            # extract the patch
             patch_values = np.dstack((data_interp_r(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                 data_interp_g(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                 data_interp_b(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1])))
@@ -1214,7 +1213,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
             #create the grid for sampling
             sampling_pattern_for_patch_y = np.arange((intPCy-coords_resized[0]), (intPCy-coords_resized[0]+sam_per_lens), 1)
             sampling_pattern_for_patch_x = np.arange((intPCx-coords_resized[1]), (intPCx-coords_resized[1]+sam_per_lens), 1)
-            
+
             # get the actual values for each channel
             r_channel = interp_patch_r(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             g_channel = interp_patch_g(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
@@ -1227,13 +1226,13 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
             # clip in  case interpolation gives some values slightly above 1 or below 0
             rgb_interp_patch_img = np.clip(rgb_interp_patch_img, 0, 1) #np.max(rgb_interp_patch_img))
             d_interp_patch_img = np.clip(d_channel, 0, 1) #np.max(d_interp_patch_img))
-            
+
             # fill the images
             rnd_img[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1,:, ft] += rgb_interp_patch_img
             rnd_cnt[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3))
             rnd_disp[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += d_interp_patch_img
             coarse_d[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1])) * single_val_disp
-            
+
     #pdb.set_trace()
     img0vals0 = (rnd_cnt[:,:,:,0] == 0).astype(np.uint8)
     img1vals0 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
@@ -1268,7 +1267,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
     weights_t0 = 1/lens_types + y_t0 / 3 * 2 - y_t1 / 3 * 1 - y_t2 /3 * 1
     weights_t1 = 1/lens_types - y_t0 / 3 * 1 + y_t1 / 3 * 2 - y_t2 /3 * 1
     weights_t2 = 1/lens_types - y_t0 / 3 * 1 - y_t1 / 3 * 1 + y_t2 /3 * 2
-    
+
     weights = np.zeros_like(rnd0)
     idisp = np.floor(coarse_d_tot / quantization_step).astype(np.uint8)
     #pdb.set_trace()
@@ -1278,7 +1277,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
 
     #pdb.set_trace()
     rnd_disp_nof = rnd_disp0 * weights[:,:,0] + rnd_disp1 * weights[:,:,1] + rnd_disp2 * weights[:,:,2]
-    
+
     #rnd_tot = rnd0f * weights + rnd1f * weights + rnd2f * weights
     weights0_w3c = np.dstack((weights[:,:,0], weights[:,:,0], weights[:,:,0]))
     weights1_w3c = np.dstack((weights[:,:,1], weights[:,:,1], weights[:,:,1]))
@@ -1305,7 +1304,7 @@ def render_interp_img_and_disp(imgs, interps, calibs, shiftx, shifty, sam_per_le
 """
 Rendering of the images
 The idea would be the following:
-1 - first take the disparities and calculate a single value 
+1 - first take the disparities and calculate a single value
 (if we have a coarse map, that would be ideal)
 2 - then we use this value to calculate the patch size that we need
 and the sampling distance
@@ -1317,10 +1316,10 @@ disparity and trying to correct them using the color information
 This method should be more general and could be called with different
 parameters/input
 ------------------
-November/Dezember 2019
+November/Dezember 2019 - Last Update Jun 2020
 """
 def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_borders, alreadyInterpolated=False):
-    
+
     img = imgs[0]
     disp = imgs[1]
     #pdb.set_trace()
@@ -1339,14 +1338,14 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
         data_interp_g = interps[1]
         data_interp_b = interps[2]
         disp_interp = interps[3]
-    
+
     # view
     img_shape = np.asarray(img.shape[0:2])
     calib = calibs[0]
     coords = calibs[1]
     local_grid = calibs[2]
 
-    # resolution should be correlated with number of lenses more than 
+    # resolution should be correlated with number of lenses more than
     # number of pixels
     #pdb.set_trace()
     # sample per lens
@@ -1361,16 +1360,22 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
     rnd_cnt = np.zeros((resolution[0], resolution[1], 3, lens_types))
     rnd_disp = np.zeros((resolution[0], resolution[1], lens_types))
     coarse_d = np.zeros((resolution[0], resolution[1], lens_types))
+
     x, y = local_grid.x, local_grid.y
+    if x.shape[0] % 2 == 0:
+        x = np.linspace(np.min(x), np.max(x), x.shape[0]-1)
+        y = np.linspace(np.min(y), np.max(y), y.shape[0]-1)
     # if needed for masking
-    xx, yy = local_grid.xx, local_grid.yy
-    mask = np.zeros_like(local_grid.xx)
-    mask[xx**2 + yy**2 < calib.inner_lens_radius**2] = 1
-    #plt.ion()   
+    #xx, yy = local_grid.xx, local_grid.yy
+    xx, yy = np.meshgrid(x,y)
     #pdb.set_trace()
-    confidenceThreshold = 0.3;
+    mask = np.zeros_like(xx)
+    mask[xx**2 + yy**2 < calib.inner_lens_radius**2] = 1
+    #plt.ion()
+    #pdb.set_trace()
+    confidenceThreshold = 0.3
     MIN_DISP_STEP = 0.001
-    
+
     half_space = np.floor((x.shape[0] - sam_per_lens) /2).astype(int)
     x_grid_patch = x[half_space:x.shape[0]-half_space]
     y_grid_patch = y[half_space:y.shape[0]-half_space]
@@ -1413,7 +1418,7 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
             single_val_disp = 0.01
         else:
             single_val_disp = np.mean(good_disp_pixels_as_array)
-        
+
         # print("disp interp: {}, disp with array: {}".format(single_val_disp2, single_val_disp))
         # plt.subplot(121); plt.imshow(img[_x-_radius:_x+_radius+1, _y-_radius:_y+_radius+1,:])
         # plt.subplot(122); plt.imshow(disp_square)
@@ -1421,7 +1426,7 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
         #print("disp was {}".format(single_val_disp))
         if single_val_disp < MIN_DISP_STEP:
             single_val_disp = MIN_DISP_STEP
-        patch_size_for_sampling = single_val_disp * info['dmax'] / 1 # * calib.lens_diameter) / 2
+        patch_size_for_sampling = single_val_disp * calib.lens_diameter #* info['dmax'] * 2.5 # ) / 2
 
         # disparity controls distance between pixels
         #sampling_distance = get_sampling_distance(single_val_disp, calib, sam_per_lens) * 2
@@ -1432,17 +1437,17 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
         intPCx = np.ceil(coords_resized[1]).astype(int)
         intPCy = np.ceil(coords_resized[0]).astype(int)
         if intPCx > hs and resolution[1] - intPCx > hs and intPCy > hs and resolution[0] - intPCy > hs:
-            
+
             #pdb.set_trace()
             #print("patch size for sampling is {}".format(patch_size_for_sampling))
             sampling_pattern = np.arange(-patch_size_for_sampling, patch_size_for_sampling+0.0001, (2*patch_size_for_sampling) / (sam_per_lens))
             #print("sampling_pattern: {}".format(sampling_pattern))
             sampling_pattern_x = sampling_pattern + shiftx
             sampling_pattern_y = sampling_pattern + shifty
-            
+
             if alreadyInterpolated:
 
-                # extract the patch 
+                # extract the patch
                 patch_values = np.dstack((data_interp_r(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                     data_interp_g(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                     data_interp_b(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1])))
@@ -1458,7 +1463,7 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
                 data_interp_g = sinterp.RectBivariateSpline(range(rgb_values.shape[0]), range(rgb_values.shape[1]), rgb_values[:,:,1])
                 data_interp_b = sinterp.RectBivariateSpline(range(rgb_values.shape[0]), range(rgb_values.shape[1]), rgb_values[:,:,2])
                 disp_interp = sinterp.RectBivariateSpline(range(disp_square.shape[0]), range(disp_square.shape[1]), disp_square * mask)
-                # extract the patch 
+                # extract the patch
                 # COLOR
                 patch_values = np.dstack((data_interp_r(sampling_pattern_y+win_size, sampling_pattern_x+win_size),
                     data_interp_g(sampling_pattern_y+win_size, sampling_pattern_x+win_size),
@@ -1478,7 +1483,7 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
             #create the grid for sampling
             sampling_pattern_for_patch_y = np.arange((intPCy-coords_resized[0]), (intPCy-coords_resized[0]+sam_per_lens), 1)
             sampling_pattern_for_patch_x = np.arange((intPCx-coords_resized[1]), (intPCx-coords_resized[1]+sam_per_lens), 1)
-            
+
             # get the actual values for each channel
             r_channel = interp_patch_r(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             g_channel = interp_patch_g(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
@@ -1497,7 +1502,7 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
             rnd_cnt[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3)) * np.dstack((patch_mask, patch_mask, patch_mask))
             rnd_disp[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += d_interp_patch_img
             coarse_d[intPCy-hs:intPCy+hs+1, intPCx-hs:intPCx+hs+1, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1])) * single_val_disp * patch_mask
-          
+
     img0vals0 = (rnd_cnt[:,:,:,0] == 0).astype(np.uint8)
     img1vals0 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
     img2vals0 = (rnd_cnt[:,:,:,2] == 0).astype(np.uint8)
@@ -1510,18 +1515,29 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
     rnd_disp0 = rnd_disp[:,:,0] / (rnd_cnt[:,:,0,0] + img0vals0[:,:,0])
     rnd_disp1 = rnd_disp[:,:,1] / (rnd_cnt[:,:,0,1] + img1vals0[:,:,0])
     rnd_disp2 = rnd_disp[:,:,2] / (rnd_cnt[:,:,0,2] + img2vals0[:,:,0])
-  
+
     # coarse disp
     coarse_d_tot = (coarse_d0 + coarse_d1 + coarse_d2 ) / lens_types
+    rnd_d_tot = (rnd_disp0 + rnd_disp1 + rnd_disp2 ) / lens_types
+    # there is a border with 0s values that could affect min_val
+    padding = 20
+    min_val = np.min(rnd_d_tot[padding:-padding, padding:-padding])
+    max_val = np.max(rnd_d_tot[padding:-padding, padding:-padding])
+    disp_normalized = np.clip((rnd_d_tot - min_val) / (max_val - min_val), 0, 1)
 
-    #pdb.set_trace()
+    #coarse_d_tot
     #plt.figure()
     filt_size = min(5, np.round(sam_per_lens/5).astype(int))
 
     # for the R29 dataset
-    range_t0 = [0.400, 1]
-    range_t1 = [0, 0.200]
-    range_t2 = [0.200, 0.400]
+    range_t1 = [0.400, 1]
+    range_t2 = [0, 0.200]
+    range_t0 = [0.200, 0.400]
+    # for R5
+    range_t1 = [0.600, 1]
+    range_t2 = [0, 0.300]
+    range_t0 = [0.300, 0.600]
+    print("using this values: {}, {}, {}".format(range_t0, range_t1, range_t2))
     quantization_step = 0.01
     x = np.arange(0, 1, quantization_step)
     y_t0 = filters.smoothstep(x, range_t0[0], range_t0[1], 0.05)
@@ -1531,18 +1547,19 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
     weights_t0 = 1/lens_types + y_t0 / 3 * 2 - y_t1 / 3 * 1 - y_t2 /3 * 1
     weights_t1 = 1/lens_types - y_t0 / 3 * 1 + y_t1 / 3 * 2 - y_t2 /3 * 1
     weights_t2 = 1/lens_types - y_t0 / 3 * 1 - y_t1 / 3 * 1 + y_t2 /3 * 2
-    
+
     weights = np.zeros_like(rnd0)
-    idisp = np.floor(coarse_d_tot / quantization_step).astype(np.uint8)
+    idisp = np.floor(disp_normalized / quantization_step).astype(np.uint8)
     #pdb.set_trace()
     idisp = np.clip(idisp, 0, 99).astype(int)
     weights[:,:,0] = weights_t0[idisp]
     weights[:,:,1] = weights_t1[idisp]
     weights[:,:,2] = weights_t2[idisp]
+    #plt.imshow(weights)
 
     #pdb.set_trace()
     rnd_disp_nof = rnd_disp0 * weights[:,:,0] + rnd_disp1 * weights[:,:,1] + rnd_disp2 * weights[:,:,2]
-    
+
     #rnd_tot = rnd0f * weights + rnd1f * weights + rnd2f * weights
     weights0_w3c = np.dstack((weights[:,:,0], weights[:,:,0], weights[:,:,0]))
     weights1_w3c = np.dstack((weights[:,:,1], weights[:,:,1], weights[:,:,1]))
@@ -1570,7 +1587,7 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
 
 
 def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per_lens, cut_borders):
-    
+
     img = imgs[0]
     disp = imgs[1]
 
@@ -1578,14 +1595,14 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
     data_interp_g = interps[1]
     data_interp_b = interps[2]
     disp_interp = interps[3]
-    
+
     # view
     img_shape = np.asarray(img.shape[0:2])
     calib = calibs[0]
     coords = calibs[1]
     local_grid = calibs[2]
 
-    # resolution should be correlated with number of lenses more than 
+    # resolution should be correlated with number of lenses more than
     # number of pixels
     #pdb.set_trace()
     # sample per lens
@@ -1605,11 +1622,11 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
     # xx, yy = local_grid.xx, local_grid.yy
     # mask = np.zeros_like(local_grid.xx)
     # mask[xx**2 + yy**2 < calib.inner_lens_radius**2] = 1
-    #plt.ion()   
+    #plt.ion()
     ## the sampling distance is fixed from the focal plane
     #sampling_distance = focal_plane
     patch_size_for_sampling = focal_plane * calib.lens_diameter / 2
-    #plt.ion()    
+    #plt.ion()
     for lc in coords:
 
         # pixel coordinates
@@ -1632,9 +1649,9 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
             #pdb.set_trace()
             #sampling_pattern = np.arange(-sampling_distance*sam_per_lens, sampling_distance*sam_per_lens + sampling_distance, sampling_distance)
             sampling_pattern = np.arange(-patch_size_for_sampling, patch_size_for_sampling, (2 * patch_size_for_sampling) / (2 * sam_per_lens + 1))
-            sampling_pattern_x = sampling_pattern 
+            sampling_pattern_x = sampling_pattern
             sampling_pattern_y = sampling_pattern
-            # extract the patch 
+            # extract the patch
             patch_values = np.dstack((data_interp_r(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                 data_interp_g(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1]),
                 data_interp_b(sampling_pattern_y+pc[0], sampling_pattern_x+pc[1])))
@@ -1648,22 +1665,22 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
             #pdb.set_trace()
             sampling_pattern_for_patch_y = np.arange((intPCy-coords_resized[0]), (intPCy-coords_resized[0]+2*sam_per_lens+1), 1)
             sampling_pattern_for_patch_x = np.arange((intPCx-coords_resized[1]), (intPCx-coords_resized[1]+2*sam_per_lens+1), 1)
-            
+
             # get the actual values for each channel
             r_channel = interp_patch_r(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             g_channel = interp_patch_g(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
             b_channel = interp_patch_b(sampling_pattern_for_patch_y, sampling_pattern_for_patch_x)
-            
+
             # stack the 3 channels together
             rgb_interp_patch_img = np.dstack((r_channel, g_channel, b_channel))
             rgb_interp_patch_img = np.clip(rgb_interp_patch_img, 0, np.max(rgb_interp_patch_img))
-            
-            
-            
+
+
+
             # plt.figure(1)
             # plt.imshow(rgb_interp_patch_img)
             # plt.figure(2)
-            # plt.imshow(img[np.round(pc[0]).astype(np.uint8)-20:np.round(pc[0]).astype(np.uint8)+21, 
+            # plt.imshow(img[np.round(pc[0]).astype(np.uint8)-20:np.round(pc[0]).astype(np.uint8)+21,
             #   np.round(pc[1]).astype(np.uint8)-20:np.round(pc[1]).astype(np.uint8)+21,:])
             # pdb.set_trace()
             hsrgb = np.floor(rgb_interp_patch_img.shape[0]/2).astype(int)
@@ -1671,14 +1688,14 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
             y = np.linspace(-hsrgb, hsrgb, rgb_interp_patch_img.shape[1])
             xx, yy = np.meshgrid(x,y)
             mask = np.zeros_like(xx)
-            mask[xx**2 + yy**2 < hsrgb**2] = 1  
+            mask[xx**2 + yy**2 < hsrgb**2] = 1
             mask3c = np.dstack((mask, mask, mask))
             #pdb.set_trace()
             # fill the images
             rnd_img[intPCy-sam_per_lens:intPCy+sam_per_lens+1, intPCx-sam_per_lens:intPCx+sam_per_lens+1,:, ft] += rgb_interp_patch_img * mask3c
             rnd_cnt[intPCy-sam_per_lens:intPCy+sam_per_lens+1, intPCx-sam_per_lens:intPCx+sam_per_lens+1, :, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1], 3)) * mask3c
             coarse_d[intPCy-sam_per_lens:intPCy+sam_per_lens+1, intPCx-sam_per_lens:intPCx+sam_per_lens+1, ft] += np.ones((rgb_interp_patch_img.shape[0], rgb_interp_patch_img.shape[1])) * single_val_disp * mask
-            
+
     #pdb.set_trace()
     img0vals0 = (rnd_cnt[:,:,:,0] == 0).astype(np.uint8)
     img0vals1 = (rnd_cnt[:,:,:,1] == 0).astype(np.uint8)
@@ -1709,18 +1726,18 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
     weights_t0 = 1/lens_types + y_t0 / 3 * 2 - y_t1 / 3 * 1 - y_t2 /3 * 1
     weights_t1 = 1/lens_types - y_t0 / 3 * 1 + y_t1 / 3 * 2 - y_t2 /3 * 1
     weights_t2 = 1/lens_types - y_t0 / 3 * 1 - y_t1 / 3 * 1 + y_t2 /3 * 2
-    
+
     weights = np.zeros_like(rnd0)
     coarse_d_tot = np.clip(coarse_d_tot, 0, 1)
     idisp = np.floor(coarse_d_tot / quantization_step).astype(np.uint8)
-    
-    
+
+
     weights[:,:,0] = weights_t0[idisp]
     weights[:,:,1] = weights_t1[idisp]
     weights[:,:,2] = weights_t2[idisp]
 
     #pdb.set_trace()
-    
+
     #rnd_tot = rnd0f * weights + rnd1f * weights + rnd2f * weights
     weights0_w3c = np.dstack((weights[:,:,0], weights[:,:,0], weights[:,:,0]))
     weights1_w3c = np.dstack((weights[:,:,1], weights[:,:,1], weights[:,:,1]))
@@ -1735,7 +1752,7 @@ def render_interp_img_at_focal_plane(imgs, interps, calibs, focal_plane, sam_per
     #plt.subplot(131); plt.imshow(filters.median_filter(rnd0, filt_size));
     #plt.subplot(132); plt.imshow(filters.median_filter(rnd1, filt_size));
     #plt.subplot(133); plt.imshow(filters.median_filter(rnd2, filt_size));
-    
+
     rnd_img_final = np.clip(filt_after, 0, 1)
     #plt.imshow(rnd_img_final)
     #pdb.set_trace()
@@ -1847,8 +1864,8 @@ def create_mesh_from_disparity(image, disparity, scaling):
                 vertex[counter, 3:6] = (image[i,j,0:3]*255).astype(int)
                 counter += 1
             # for each pixel create a face
-            
-              
+
+
     mesh = np.zeros((counter, 6))
     mesh[:,:] = bigmesh[:counter, :]
     return mesh, counter

@@ -1,10 +1,10 @@
 from distutils.core import setup
 from Cython.Build import cythonize
-import numpy
+import numpy as np
 
 setup(
     ext_modules=cythonize("disparity/sgm_cost_path.pyx"),
-    include_dirs=[numpy.get_include()]
+    include_dirs=[np.get_include()]
 )    
 
 #from distutils.core import setup, Extension

@@ -20,7 +20,6 @@ import pdb
 import cv2
 import matplotlib.pyplot as plt
 #import matplotlib.image
-from pygco import cut_simple
 
 
 def estimate_disp(args):
@@ -852,8 +851,8 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
     
     for i, l in enumerate(fine_costs):
         
-        if i%1000==0:
-            print("Regularization: Processing lens {0}/{1}".format(i, num_lenses))
+        if i%100==0:
+            print("Regularization: Processing lens {:05d}/{:05d}".format(i, num_lenses), end="\r", flush=True)
         lens = lenses[l]
 
         # prepare the cost shape: disparity axis is third axis (index [2] instead of [0])
@@ -866,30 +865,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
         fine_depths[l] = np.argmin(sgm_cost, axis=2)
         
         # interpolated minima and values
-        #fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
-
-        # cost should be C-Contiguous
-        sgm_cost_c = sgm_cost.copy(order='C')
-        # also in int32
-        sgm_cost_c_int = (sgm_cost_c  * 1000).astype(np.int32)
-        # number of disparities
-        n_disps = F.shape[2]
-
-        cut = 'unary'
-        if cut == 'potts':
-            # potts model
-            depth_cut = cut_simple(sgm_cost_c_int, -5 * np.eye(sgm_cost.shape[2], dtype=np.int32))
-        elif cut == 'unary':
-            # unary model
-            x, y = np.ogrid[:n_disps, :n_disps]
-            one_d_topology = np.abs(x - y).astype(np.int32).copy("C")
-            #pdb.set_trace()
-            depth_cut = cut_simple(sgm_cost_c_int, 5 * one_d_topology)
-        else:
-            print("No cut recognised. Do you wish to use potts or unary model?")
-            pdb.set_trace()
-
-        fine_depths_interp[l] = depth_cut
+        fine_depths_interp[l], fine_depths_val[l] = rtxdisp.cost_minima_interp(sgm_cost, disp)
 
         #if i%1000==0:
         #    print("max interp: {0}".format(np.amax(fine_depths_interp[l])))
@@ -942,6 +918,7 @@ def regularized_fine(lenses, fine_costs, disp, penalty1, penalty2, max_cost, con
             confidence_map[np.isnan(confidence_map)] = 0
             confidence[l] = confidence_map
 
+    print("\nDone!")
     return fine_depths, fine_depths_interp, fine_depths_val, wta_depths, wta_depths_interp, wta_depths_val, confidence
     
 def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, nb_args, max_cost, refine=True, progress_hook=print):
@@ -987,7 +964,7 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
        
         
         if i % 100 == 0:
-            progress_hook("Building Cost Volume: processing lens {0}/{1}".format(i, num_lenses))
+            print("Building Cost Volume: processing microlens {:05d}/{:05d}".format(i, num_lenses), end="\r", flush=True)
         
         
         # calculate a first guess of the disparity based on the first circle
@@ -1020,7 +997,7 @@ def calc_costs_selective_with_lut(lenses, disparities, nb_strategy, technique, n
     
         lens_std[lcoord] = lens_var
 
-    progress_hook("Num comparisons: {0}".format(num_targets))
+    print("\nDone!\nNum comparisons: {0}\n".format(num_targets))
     
     return fine_costs, coarse_costs, coarse_costs_merged, lens_std, num_targets, 0.0   
    
