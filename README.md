@@ -1,5 +1,5 @@
 # Plenoptic Toolbox 2.0
-The Plenoptic Toolbox 2.0 aims to help promote research using Focused Plenoptic Cameras (a.k.a. Plenoptic 2.0), 
+The Plenoptic Toolbox 2.0 aims to help promote research using Focused Plenoptic Cameras (a.k.a. Plenoptic 2.0),
 providing a dataset of real and synthetic images.
 
 ![3Dani](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/ANIMATIONS/animation.gif)
@@ -29,7 +29,7 @@ Alley                      |  Alley Depth              | Coffee Image           
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 ![Plant](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/alley_light.png) | ![Plant](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/alley_light_disp.png) | ![Dragon](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/coffee_rose_largest_small.png) | ![Dragon](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/THUMBNAILS/coffee_rose_largest_disp_small.png)
 
-The Dataset containing the images (for reasons of space cannot be provided here) is available [here](https://drive.google.com/open?id=17I6nTf4GLYiO9fdWITEy155F-OaonaeQ) 
+The Dataset containing the images (for reasons of space cannot be provided here) is available [here](https://drive.google.com/open?id=17I6nTf4GLYiO9fdWITEy155F-OaonaeQ)
 
 The Google Drive folder contains real images taken with Raytrix Cameras (R29 and R42) and Synthetic Images (generated with Blender) along with the corresponding calibration or configuration file needed to work on the images.
 
@@ -56,4 +56,4 @@ Physically based Blender Plug-in to simulate plenoptic 1.0 and 2.0 capturing pro
 
 
 ## General Informations and Updates
-Contact Address: lpa@informatik.uni-kiel.de  
+Contact Address: bagigi@disroot.org  

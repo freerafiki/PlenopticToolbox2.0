@@ -2,7 +2,7 @@
 
 # PythonLibrary
 
-This folder contains the python library to work with Plenoptic Images. 
+This folder contains the python library to work with Plenoptic Images.
 
 It contains the following folders:
 - plenopticIO: Input and Output management for such images
@@ -46,7 +46,7 @@ workaround found it [here](https://github.com/andersbll/cudarray/issues/52) work
 
 #### PYTHONPATH
 
-Moreover, the structure of the python code requires that you set the environmental variable of your computer 
+Moreover, the structure of the python code requires that you set the environmental variable of your computer
 `PYTHONPATH=/thepathwhereyoudownloadedthefolder/PlenopticToolbox/python`
 
 This can be done temporarily in two ways (temporarily means this has to be done everytime the python scripts have to be launched):
@@ -76,9 +76,9 @@ To prove that the environmental variable is set, a simple test can be done using
 
 In order to correctly run a script, you need to have downloaded at least one image (not from github as they don't fit here for reason of space, but from the google drive folder or the figshare dataset) and its corresponding configuration file (it ends in .xml)
 
-Once you have both, the script can be run using the corresponding command. For ease of use, the script assumes that the name of the configuration file and the image are the same. The easiest way to do this is just renaming the configuration file (it is the same for many pictures) as the image. 
+Once you have both, the script can be run using the corresponding command. For ease of use, the script assumes that the name of the configuration file and the image are the same. The easiest way to do this is just renaming the configuration file (it is the same for many pictures) as the image.
 For example, if you want to use _Dragon_Processed.png_ image, change .xml file to _Dragon_Processed.xml_. You are also free to modify the code (in the folder plenopticIo the file [imgIO.py](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/blob/master/python/plenopticIO/imgIO.py) is taking care of this, at the lines 149 and 163 there are two methods that are using the filename, if you edit there putting the name you wish, this can be easily changed).
 
 For more example about scripts, go to the [samples page](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples).
 
-For further information, write to lpa@informatik.uni-kiel.de
+For further information, write to bagigi@disroot.org

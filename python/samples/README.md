@@ -2,7 +2,7 @@
 
 The samples given here are intended to give some hints about how to use the available code:
 
-Now three major scripts are provided, more can be added in case of request (just write me at lpa@informatik.uni-kiel.de)
+Now three major scripts are provided, more can be added in case of request (just write me at bagigi@disroot.org)
 
 Older scripts or basic programs are also available in the [other_stuff](https://github.com/PlenopticToolbox/PlenopticToolbox2.0/tree/master/python/samples/other_stuff) page.
 
@@ -59,7 +59,7 @@ The script saves the images in a .png format, if you want to create an animated 
 
 ### Refocusing: create a focal stack (render_focal_stack.py)
 
-Using the same rendering process described above while keeping constant the size of the patch to be extracted from each lens, we can obtain a refocusing effect. Using subpixel accuracy allows us to create many different planes in focus. At the moment the code creates an image where only one plane is in focus, a more sophisticated version with different planes in focus could be addressed. 
+Using the same rendering process described above while keeping constant the size of the patch to be extracted from each lens, we can obtain a refocusing effect. Using subpixel accuracy allows us to create many different planes in focus. At the moment the code creates an image where only one plane is in focus, a more sophisticated version with different planes in focus could be addressed.
 We constrain the focal planes with the size of the patch. Objects that have less than 3 virtual depth (so less than 3 repetitions horizontally on the microlens images) are the hardest, the refocusing works very good in the range from 3 to higher virtual depth (in the tested images there were no upper bound yet).
 
 Sample GIF               |  Sample GIF          |
@@ -101,4 +101,3 @@ Parameters:
 `-ffw` regulates the window size of the filter in the focus measure
 
 It takes as input the focal stack created with the above script, computes a disparity and then merge it with the one computed from the stereo matching to have more robust final estimation.
-
