@@ -1318,7 +1318,7 @@ parameters/input
 ------------------
 November/Dezember 2019 - Last Update Jun 2020
 """
-def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_borders, alreadyInterpolated=False):
+def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_borders, alreadyInterpolated=False, plenoptic_camera='R29'):
 
     img = imgs[0]
     disp = imgs[1]
@@ -1426,7 +1426,7 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
         #print("disp was {}".format(single_val_disp))
         if single_val_disp < MIN_DISP_STEP:
             single_val_disp = MIN_DISP_STEP
-        patch_size_for_sampling = single_val_disp * calib.lens_diameter #* info['dmax'] * 2.5 # ) / 2
+        patch_size_for_sampling = single_val_disp * info['dmax'] # * 2.5 # calib.lens_diameter #) / 2
 
         # disparity controls distance between pixels
         #sampling_distance = get_sampling_distance(single_val_disp, calib, sam_per_lens) * 2
@@ -1529,15 +1529,38 @@ def render_SI(imgs, interps, calibs, info, shiftx, shifty, sam_per_lens, cut_bor
     #plt.figure()
     filt_size = min(5, np.round(sam_per_lens/5).astype(int))
 
-    # for the R29 dataset
-    range_t1 = [0.400, 1]
-    range_t2 = [0, 0.200]
-    range_t0 = [0.200, 0.400]
-    # for R5
-    range_t1 = [0.600, 1]
-    range_t2 = [0, 0.300]
-    range_t0 = [0.300, 0.600]
-    print("using this values: {}, {}, {}".format(range_t0, range_t1, range_t2))
+    print("WARNING: this part may not be 100% perfect yet. Contributions are welcome!")
+    if plenoptic_camera == 'R29':
+        print("Using values for images taken with {}".format(plenoptic_camera))
+        print("***************************************")
+        print("WARNING: Default settings are good for R29 cameras!")
+        print("If using another cameras, change the parameters or at least check out values")
+        print("If artifacts arises, it may be due to this values")
+        print("***************************************")
+        # for the R29 dataset
+        range_t1 = [0.400, 1]
+        range_t2 = [0, 0.200]
+        range_t0 = [0.200, 0.400]
+        print("using this values: {}, {}, {}".format(range_t0, range_t1, range_t2))
+    elif plenoptic_camera == 'R5':
+        print("Using values for images taken with {}".format(plenoptic_camera))
+        # for R5
+        range_t1 = [0.600, 1]
+        range_t2 = [0, 0.300]
+        range_t0 = [0.300, 0.600]
+        print("using this values: {}, {}, {}".format(range_t0, range_t1, range_t2))
+    else:
+        print("Using values for images taken with {}".format(plenoptic_camera))
+        print("***************************************")
+        print("WARNING: It seems like the camera parameter chosen is not yet implemented (or wrong)")
+        print("Change the parameters or at least check out the values")
+        print("If artifacts arises, it may be due to this values")
+        print("***************************************")
+        range_t1 = [0.400, 1]
+        range_t2 = [0, 0.200]
+        range_t0 = [0.200, 0.400]
+        print("using this values: {}, {}, {}".format(range_t0, range_t1, range_t2))
+
     quantization_step = 0.01
     x = np.arange(0, 1, quantization_step)
     y_t0 = filters.smoothstep(x, range_t0[0], range_t0[1], 0.05)
