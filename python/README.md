@@ -9,11 +9,15 @@ It contains the following folders:
 - microlens: The object structure used for each micro-lens is built here
 - disparity: It contains the code for estimating disparity map from a single image
 - rendering: It takes care of the rendering process, showing the image and calculating the all-in-focus images
-- samples: Some samples to show how the code works (check the sample folder for a more detailed explanation)
+- samples: Some samples to show how the code works (check the [samples folder](https://github.com/freerafiki/PlenopticToolbox2.0/tree/master/python/samples) for a more detailed explanation)
 
 And the following files:
 - setup.py: used for the cython compilation of the sgm file
 - plenopticGUI.py: a basic graphical user interface to load images and estimate disparity. It is still a beta version for testing, it probably has some bugs
+
+**NOTE:** The GUI was developed long time ago (as of now, end 2024), so it might not be the best option to get all functionalities. 
+I suggest you use the examples provided for some inspiration (check out the [samples folder](https://github.com/freerafiki/PlenopticToolbox2.0/tree/master/python/samples)!).
+If you feel like you would want a GUI, feel free to reach out and I can try to assist you and I am super open to merge your code for a better GUI!
 
 ## Dependencies and requirements
 In order to work with the python library, you need:
