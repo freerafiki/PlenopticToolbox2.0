@@ -1,5 +1,3 @@
-### Last Update: October 2019
-
 # PythonLibrary
 
 This folder contains the python library to work with Plenoptic Images.
